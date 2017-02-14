@@ -1,0 +1,11 @@
+{
+  "name": "fe dev tool",
+  "version": "0.0.1",
+  "bin": {
+    "ft": "bin/ft"
+  },
+  "dependencies": {
+    "commander": "^2.9.0",
+    "yargs": "^6.6.0"
+  }
+}
