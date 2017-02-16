@@ -4,5 +4,6 @@ export default function server(program) {
     .option('-p, --port [value]', '端口号')
     .action((options) => {
       console.log('port', options.port);
+      console.log('process.cwd', process.cwd());
     });
 };
