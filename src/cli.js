@@ -5,9 +5,7 @@ import { version } from '../package.json';
 
 program
   .version(version)
-  .usage('测试[options] <package>')
-  .option('-h, --help', '帮助')
-  .option('-v, --version', '版本');
+  .usage('测试[options] <package>');
 commands(program);
 
 export function run(argv) {

@@ -1,11 +1,8 @@
 export default function server(program) {
-  program.command('server [cmd]')
+  program.command('server')
     .description('启动服务器')
     .option('-p, --port [value]', '端口号')
-    .action((cmd, options) => {
+    .action((options) => {
       console.log('port', options.port);
-    })
-    .on('--help', () => {
-      console.log(arguments);
     });
 };
