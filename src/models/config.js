@@ -1,4 +1,4 @@
-
+import webpackMerge from 'webpack-merge';
 
 class Config {
   constructor(cwd) {
@@ -73,6 +73,7 @@ class Config {
     }
 
     this.setExports(extendConfig.exports);
+    this.setWebpackConfig(extendConfig.webpackConfig);
   }
 
   setExports(entries) {
@@ -91,8 +92,27 @@ class Config {
     }
   }
 
-  setWebpackConfig(config) {
-    this.config
+  setWebpackConfig(config = {}) {
+    let newConfig = Object.assign({}, this.config);
+    if (typeof config === 'object') {
+      webpackMerge(newConfig, config);
+    } else if(typeof config === 'function') {
+      newConfig = config(newConfig);
+    } else {
+      console.error('webpackConfig 设置错误');
+      return;
+    }
+    if (newConfig.context && !sysPath.isAbsolute(newConfig.context)) {
+      newConfig.context = sysPath.join(this.cwd, newConfig.context);
+    }
+
+    if (newConfig.resolve.alias) {
+      let alias = newConfig.resolve.alias;
+      Object.keys(alias).forEach((name) => {
+        alias[name] = sysPath.join(this.config, alias[key]);
+      });
+    }
+
   }
 }
 
