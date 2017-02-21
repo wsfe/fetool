@@ -58,7 +58,7 @@ class Config {
   }
 
   readConfig() {
-    let userConfig = this.getUserConfig(sysPath.join(this.cwd, 'ft.config'));
+    let userConfig = this.getUserConfig(sysPath.resolve(this.cwd, 'ft.config'));
     if (!userConfig) {
       console.error('请设置配置文件');
       return this;
@@ -93,26 +93,36 @@ class Config {
   }
 
   setWebpackConfig(config = {}) {
-    let newConfig = Object.assign({}, this.config);
     if (typeof config === 'object') {
-      webpackMerge(newConfig, config);
+      webpackMerge(this.config, config);
     } else if(typeof config === 'function') {
-      newConfig = config(newConfig);
+      this.config = config(this.config);
     } else {
       console.error('webpackConfig 设置错误');
       return;
     }
-    if (newConfig.context && !sysPath.isAbsolute(newConfig.context)) {
-      newConfig.context = sysPath.join(this.cwd, newConfig.context);
+    if (this.config.context && !sysPath.isAbsolute(this.config.context)) {
+      this.config.context = sysPath.join(this.cwd, this.config.context);
     }
 
-    if (newConfig.resolve.alias) {
-      let alias = newConfig.resolve.alias;
+    if (this.config.resolve.alias) {
+      let alias = this.config.resolve.alias;
       Object.keys(alias).forEach((name) => {
-        alias[name] = sysPath.join(this.config, alias[key]);
+        alias[name] = sysPath.join(this.cwd, alias[key]);
       });
     }
 
+    let output = this.config.output;
+    Object.keys(output).forEach((env) => {
+      let op = output[env];
+      if (op.path && !sysPath.isAbsolute(op.path)) {
+        op.path = sysPath.join(this.cwd, op.path);
+      }
+    });
+  }
+
+  getConfig() {
+    return Object.assign({}, this.config);
   }
 }
 
