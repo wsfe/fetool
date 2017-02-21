@@ -29,7 +29,17 @@ export default function compiler(req, res, next) {
   }
 
   let compiler = project.getServerCompiler((config) => {
-    
+    let newConfig = Object.assign({}, config);
+    newConfig.entry = {};
+    Object.keys(config.entry).forEach((name) => {
+      var entryItem = config.entry[name];
+
+      const entryExtNames = config.entryExtNames;
+      Object.keys(entryExtNames).forEach((target) => {
+        let exts = entryExtNames[target];
+        
+      });
+    });
   });
 
 };

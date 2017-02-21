@@ -1,12 +1,13 @@
 import webpackMerge from 'webpack-merge';
+import _ from 'lodash';
 
 class Config {
   constructor(cwd) {
     this.cwd = cwd;
     this.entryGroups = {};
     this.entryExtNames = {
-      css: ['.css'],
-      js: ['.js', '.jsx']
+      css: ['.css', '.scss', '.sass', '.less'],
+      js: ['.js', '.jsx', '.vue']
     };
     this.config = {
       context: sysPath.join(cwd, 'src'),
@@ -63,6 +64,7 @@ class Config {
       console.error('请设置配置文件');
       return this;
     }
+    this.setEntryExtNames(userConfig.entryExtNames);
     let extendConfig = userConfig.config;
     if (typeof extendConfig === 'function') {
       extendConfig = extendConfig.call(this, this.cwd);
@@ -74,6 +76,19 @@ class Config {
 
     this.setExports(extendConfig.exports);
     this.setWebpackConfig(extendConfig.webpackConfig);
+  }
+
+  setEntryExtNames(entryExtNames) {
+    if (entryExtNames) {
+      if (entryExtNames.js) {
+        this.entryExtNames.js = _.concat(this.entryExtNames.js, entryExtNames.js);
+        this.entryExtNames.js = _.uniq(this.entryExtNames.js);
+      }
+      if (entryExtNames.css) {
+        this.entryExtNames.css = _.concat(this.entryExtNames.css, entryExtNames.css);
+        this.entryExtNames.css = _.uniq(this.entryExtNames.css);
+      }
+    }
   }
 
   setExports(entries) {
