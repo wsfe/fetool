@@ -7,8 +7,8 @@ class Project {
     this.config = new Config(cwd);
   }
 
-  getServerCompiler(cb) {
-    let config = this.config.getConfig();
+  getServerCompiler(isCss, cb) {
+    let config = this.config.getConfig(isCss);
     if (cb && typeof cb === 'function') {
       cb(config);
     }

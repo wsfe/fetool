@@ -1,5 +1,6 @@
 import webpackMerge from 'webpack-merge';
 import _ from 'lodash';
+import ExtTemplatePath from '../plugins/extTemplatePath';
 
 class Config {
   constructor(cwd) {
@@ -40,9 +41,16 @@ class Config {
         }, {
           test: /\.css$/,
           use: ['style-loader', 'css-loader']
+        }, {
+          test: /\.less$/,
+          use: ['style-loader', 'css-loader', 'less-loader']
         }]
       },
-      plugins: [],
+      plugins: [
+        new ExtTemplatePath({
+          entryExtNames: this.entryExtNames
+        })
+      ],
       resolve: {
         root: [],
         extensions: ['*', '.js', '.css', '.json', '.string', '.tpl'],
@@ -50,6 +58,7 @@ class Config {
       },
       devtool: 'cheap-source-map'
     };
+    this.cssConfig = {};
     this.readConfig();
   }
 
@@ -75,7 +84,8 @@ class Config {
     }
 
     this.setExports(extendConfig.exports);
-    this.setWebpackConfig(extendConfig.webpackConfig);
+    this.setWebpackConfig(extendConfig.webpackConfig); // 全局的webpack配置
+    this.setCSSWebpackConfig(extendConfig.cssWebpackConfig); // 默认已经对css做了处理，但是如果要自定义的话也是可以的，不过这个时候，需要自己配置
   }
 
   setEntryExtNames(entryExtNames) {
@@ -92,26 +102,36 @@ class Config {
   }
 
   setExports(entries) {
-    if (entries && Array.isArray(entries)) {
-      entries.forEach((entry) => {
-        let name = '';
-        if (typeof entry === 'string') {
-          name = entry;
-        } else if(Array.isArray(entry)) {
-          name = entry[entry.length - 1];
-        }
-        this.config.entry[name] = entry;
-      });
+    if (entries) {
+      if (Array.isArray(entries)) {
+        entries.forEach((entry) => {
+          let name = '';
+          if (typeof entry === 'string') {
+            name = entry;
+          } else if (Array.isArray(entry)) {
+            name = entry[entry.length - 1];
+          }
+          this.config.entry[name] = entry;
+        });
+      } else if (_.isPlainObject(entries)) {
+        Object.keys(entries).forEach((name) => {
+          if (sysPath.extname(name) !== '.js') {
+            this.config.entry[name + '.js'] = entries[name];
+          } else {
+            this.config.entry[name] = entries[name];
+          }
+        });
+      }
     } else {
       console.error('没有exports')
     }
   }
 
-  setWebpackConfig(config = {}) {
-    if (typeof config === 'object') {
-      webpackMerge(this.config, config);
-    } else if(typeof config === 'function') {
-      this.config = config(this.config);
+  setWebpackConfig(webpackConfig = {}) {
+    if (typeof webpackConfig === 'object') {
+      webpackMerge(this.config, webpackConfig);
+    } else if (typeof webpackConfig === 'function') {
+      this.config = webpackConfig(this.config);
     } else {
       console.error('webpackConfig 设置错误');
       return;
@@ -136,8 +156,17 @@ class Config {
     });
   }
 
-  getConfig() {
-    return Object.assign({}, this.config);
+  setCSSWebpackConfig(webpackConfig = {}) {
+    this.cssConfig = Object.assign({}, this.config);
+    if (typeof webpackConfig === 'object') {
+      webpackMerge(this.cssConfig, webpackConfig);
+    } else if (typeof webpackConfig === 'function') {
+      this.cssConfig = webpackConfig(this.cssConfig);
+    }
+  }
+
+  getConfig(isCss) {
+    return isCss ? Object.assign({}, this.cssConfig) : Object.assign({}, this.config);
   }
 }
 

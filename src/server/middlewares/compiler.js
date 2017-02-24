@@ -5,7 +5,7 @@ const VER_REG = /@[\d\w]+(?=\.\w+)/;
 let middlewareCache = {};
 
 export default function compiler(req, res, next) {
-  let url = req.url,
+  let url = req.url, // url == '/projectname/prd/..../xxx@hash值.js|css';
     filePaths = url.split('/'),
     projectName = filePaths[1],
     projectCwd = sysPath.join(process.cwd(), projectName),
@@ -28,18 +28,34 @@ export default function compiler(req, res, next) {
     return;
   }
 
+  let ext = sysPath.extname(cacheId);
+
   let compiler = project.getServerCompiler((config) => {
     let newConfig = Object.assign({}, config);
     newConfig.entry = {};
-    Object.keys(config.entry).forEach((name) => {
-      var entryItem = config.entry[name];
+    Object.keys(config.entry).forEach((entryPath) => {
+      var entryItem = config.entry[entryPath];
 
       const entryExtNames = config.entryExtNames;
       Object.keys(entryExtNames).forEach((target) => {
         let exts = entryExtNames[target];
-        
+        // 创建正则匹配
+        exts = exts.map((name) => {
+          return name + '$';
+        });
+        let replaceReg = new RegExp('\\' + exts.join('|\\'));
+        let requestKey = entryPath.replace(replaceReg, '.' + target); // 例如将.less换成.css,.vue 换成 .js
       });
+
+      // 判断所请求的资源是否在入口配置中
+      let isRequestEntry = sysPath.normalize(requestKey) === sysPath.normalize(requestUrl);
+
+      if (isRequestEntry) {
+        newConfig.entry[entryPath] = entryItem;
+      }
     });
+
+    return newConfig;
   });
 
 };
