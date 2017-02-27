@@ -1,6 +1,7 @@
 import webpackMerge from 'webpack-merge';
 import _ from 'lodash';
 import ExtTemplatePath from '../plugins/extTemplatePath';
+import ExtractTextPlugin from 'extract-text-webpack-plugin';
 
 class Config {
   constructor(cwd) {
@@ -83,9 +84,9 @@ class Config {
       return this;
     }
 
-    this.setExports(extendConfig.exports);
     this.setWebpackConfig(extendConfig.webpackConfig); // 全局的webpack配置
     this.setCSSWebpackConfig(extendConfig.cssWebpackConfig); // 默认已经对css做了处理，但是如果要自定义的话也是可以的，不过这个时候，需要自己配置
+    this.setExports(extendConfig.exports);
   }
 
   setEntryExtNames(entryExtNames) {
@@ -111,7 +112,12 @@ class Config {
           } else if (Array.isArray(entry)) {
             name = entry[entry.length - 1];
           }
-          this.config.entry[name] = entry;
+          let type = this.getSourceType(name);
+          if (type === 'js') {
+            this.config.entry[name] = entry;
+          } else if (type === 'css') {
+            this.cssConfig.entry[name] = entry;
+          }
         });
       } else if (_.isPlainObject(entries)) {
         Object.keys(entries).forEach((name) => {
@@ -158,6 +164,31 @@ class Config {
 
   setCSSWebpackConfig(webpackConfig = {}) {
     this.cssConfig = Object.assign({}, this.config);
+    webpackMerge(this.cssConfig, {
+      module: {
+        rules: [
+          {
+            test: /\.css$/,
+            use: ExtractTextPlugin.extract({
+              fallback: 'style-loader',
+              use: 'css-loader'
+            })
+          }, {
+            test: /\.less$/,
+            use: ExtractTextPlugin.extract({
+              fallback: 'style-loader',
+              use: ['css-loader', 'less-loader']
+            })
+          }
+        ]
+      },
+      plugins: [
+        new ExtractTextPlugin({
+          filename: '[noextname]@[chunkhash].css',
+          allChunks: true
+        })
+      ]
+    });
     if (typeof webpackConfig === 'object') {
       webpackMerge(this.cssConfig, webpackConfig);
     } else if (typeof webpackConfig === 'function') {
@@ -165,8 +196,20 @@ class Config {
     }
   }
 
-  getConfig(isCss) {
-    return isCss ? Object.assign({}, this.cssConfig) : Object.assign({}, this.config);
+  getConfig(type) {
+    return type === 'css' ? Object.assign({}, this.cssConfig) : Object.assign({}, this.config);
+  }
+
+  getSourceType(name) {
+    let ext = sysPath.extname(name);
+    let type = 'js';
+    Object.keys(this.entryExtNames).forEach((extName) => {
+      let exts = this.entryExtNames[extName];
+      if (exts.indexOf(ext) > -1) {
+        type = extName;
+      }
+    });
+    return type;
   }
 }
 

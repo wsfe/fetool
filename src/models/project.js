@@ -7,10 +7,10 @@ class Project {
     this.config = new Config(cwd);
   }
 
-  getServerCompiler(isCss, cb) {
-    let config = this.config.getConfig(isCss);
+  getServerCompiler(type, cb) {
+    let config = this.config.getConfig(type);
     if (cb && typeof cb === 'function') {
-      cb(config);
+      config = cb(config);
     }
     webpack(config);
   }
