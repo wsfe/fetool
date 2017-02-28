@@ -7,8 +7,8 @@ class Project {
     this.config = new Config(cwd);
   }
 
-  getServerCompiler(type, cb) {
-    let config = this.config.getConfig(type);
+  getServerCompiler(cb) {
+    let config = this.config.getConfig();
     if (cb && typeof cb === 'function') {
       config = cb(config);
     }

@@ -1,4 +1,5 @@
 import { projectService } from '../services';
+import webpackDevMiddleware from 'webpack-dev-middleware';
 
 const QUERY_REG = /\?.+$/;
 const VER_REG = /@[\d\w]+(?=\.\w+)/;
@@ -21,36 +22,21 @@ export default function compiler(req, res, next) {
   url = '/' + filePaths.slice(3).join('/').replace(QUERY_REG, '').replace(VER_REG, '');
   req.url = url;
   let requestUrl = url.replace('.map', '').slice(1);
-  let cacheId = sysPath.join(projectName, requestUrl);
+  // let cacheId = sysPath.join(projectName, requestUrl);
 
-  if (middlewareCache[cacheId]) {
-    middlewareCache[cacheId](req, res, next);
+  // if (middlewareCache[cacheId]) {
+  //   middlewareCache[cacheId](req, res, next);
+  //   return;
+  // }
+  if (middlewareCache[projectName]) {
+    middlewareCache[projectName](req, res, next);
     return;
   }
 
-  let ext = sysPath.extname(cacheId);
-  let compiler = project.getServerCompiler(ext, (config) => {
-    let newConfig = Object.assign({}, config);
-    newConfig.entry = {};
-    Object.keys(config.entry).forEach((entryPath) => {
-      var entryItem = config.entry[entryPath];
-
-      // 创建正则匹配
-      let extRegs = this.project.config.entryExtNames[ext].map((name) => {
-        return name + '$';
-      });
-      let replaceReg = new RegExp('\\' + extRegs.join('|\\'));
-      let requestKey = entryPath.replace(replaceReg, '.' + target); // 例如将.less换成.css,.vue 换成 .js
-
-      // 判断所请求的资源是否在入口配置中
-      let isRequestEntry = sysPath.normalize(requestKey) === sysPath.normalize(requestUrl);
-
-      if (isRequestEntry) {
-        newConfig.entry[entryPath] = entryItem;
-      }
-    });
-
-    return newConfig;
+  let compiler = project.getServerCompiler();
+  let middleware = webpackDevMiddleware(compiler, {
+    lazy: true
   });
 
+  
 };

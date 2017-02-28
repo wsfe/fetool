@@ -59,7 +59,6 @@ class Config {
       },
       devtool: 'cheap-source-map'
     };
-    this.cssConfig = {};
     this.readConfig();
   }
 
@@ -84,8 +83,7 @@ class Config {
       return this;
     }
 
-    this.setWebpackConfig(extendConfig.webpackConfig); // 全局的webpack配置
-    this.setCSSWebpackConfig(extendConfig.cssWebpackConfig); // 默认已经对css做了处理，但是如果要自定义的话也是可以的，不过这个时候，需要自己配置
+    this.setWebpackConfig(extendConfig.webpackConfig);
     this.setExports(extendConfig.exports);
   }
 
@@ -112,12 +110,7 @@ class Config {
           } else if (Array.isArray(entry)) {
             name = entry[entry.length - 1];
           }
-          let type = this.getSourceType(name);
-          if (type === 'js') {
-            this.config.entry[name] = entry;
-          } else if (type === 'css') {
-            this.cssConfig.entry[name] = entry;
-          }
+          this.config.entry[name] = entry;
         });
       } else if (_.isPlainObject(entries)) {
         Object.keys(entries).forEach((name) => {
@@ -162,42 +155,8 @@ class Config {
     });
   }
 
-  setCSSWebpackConfig(webpackConfig = {}) {
-    this.cssConfig = Object.assign({}, this.config);
-    webpackMerge(this.cssConfig, {
-      module: {
-        rules: [
-          {
-            test: /\.css$/,
-            use: ExtractTextPlugin.extract({
-              fallback: 'style-loader',
-              use: 'css-loader'
-            })
-          }, {
-            test: /\.less$/,
-            use: ExtractTextPlugin.extract({
-              fallback: 'style-loader',
-              use: ['css-loader', 'less-loader']
-            })
-          }
-        ]
-      },
-      plugins: [
-        new ExtractTextPlugin({
-          filename: '[noextname]@[chunkhash].css',
-          allChunks: true
-        })
-      ]
-    });
-    if (typeof webpackConfig === 'object') {
-      webpackMerge(this.cssConfig, webpackConfig);
-    } else if (typeof webpackConfig === 'function') {
-      this.cssConfig = webpackConfig(this.cssConfig);
-    }
-  }
-
-  getConfig(type) {
-    return type === 'css' ? Object.assign({}, this.cssConfig) : Object.assign({}, this.config);
+  getConfig() {
+    return Object.assign({}, this.config);
   }
 
   getSourceType(name) {
