@@ -4,7 +4,8 @@ import webpack from 'webpack';
 class Project {
   constructor(cwd) {
     this.cwd = cwd;
-    this.config = new Config(cwd);
+    this.configFile = sysPath.resolve(this.cwd, 'ft.config');
+    this.config = new Config(cwd, this.configFile);
   }
 
   getServerCompiler(cb) {

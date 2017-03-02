@@ -4,8 +4,9 @@ import ExtTemplatePath from '../plugins/extTemplatePath';
 import ExtractTextPlugin from 'extract-text-webpack-plugin';
 
 class Config {
-  constructor(cwd) {
+  constructor(cwd, configFile) {
     this.cwd = cwd;
+    this.configFile = configFile;
     this.entryGroups = {};
     this.entryExtNames = {
       css: ['.css', '.scss', '.sass', '.less'],
@@ -68,7 +69,7 @@ class Config {
   }
 
   readConfig() {
-    let userConfig = this.getUserConfig(sysPath.resolve(this.cwd, 'ft.config'));
+    let userConfig = this.getUserConfig(this.configFile);
     if (!userConfig) {
       console.error('请设置配置文件');
       return this;

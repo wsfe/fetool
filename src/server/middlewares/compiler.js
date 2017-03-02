@@ -4,13 +4,18 @@ import webpackDevMiddleware from 'webpack-dev-middleware';
 const QUERY_REG = /\?.+$/;
 const VER_REG = /@[\d\w]+(?=\.\w+)/;
 let middlewareCache = {};
+let watchCache = {};
+
+function watchConfig(project, projectName) {
+  
+}
 
 export default function compiler(req, res, next) {
   let url = req.url, // url == '/projectname/prd/..../xxx@hash值.js|css';
     filePaths = url.split('/'),
     projectName = filePaths[1], // 项目名称
     projectCwd = sysPath.join(process.cwd(), projectName), // 项目的绝对路径
-    project = projectService.getProject(projectCwd, false),
+    project = projectService.getProject(projectCwd, true),
     outputDir = project.config.output.local.path || 'prd';
 
   // 非output.path下的资源不做任何处理
@@ -38,5 +43,7 @@ export default function compiler(req, res, next) {
     lazy: true
   });
 
-  
+  middlewareCache[projectName] = middleware;
+
+  middleware(req, res, next);
 };
