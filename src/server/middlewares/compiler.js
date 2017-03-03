@@ -1,13 +1,20 @@
 import { projectService } from '../services';
 import webpackDevMiddleware from 'webpack-dev-middleware';
+import chokidar from 'chokidar';
 
 const QUERY_REG = /\?.+$/;
 const VER_REG = /@[\d\w]+(?=\.\w+)/;
 let middlewareCache = {};
 let watchCache = {};
 
-function watchConfig(project, projectName) {
-  
+function watchConfig(projectName, configFilePath, projectCwd) {
+  if (!watchCache[projectName]) {
+    let watcher = chokidar.watch(configFilePath);
+    watcher.on('change', () => {
+      projectService.getProject(projectCwd, false);
+    });
+    watchCache[projectName] = watcher;
+  }
 }
 
 export default function compiler(req, res, next) {
@@ -46,4 +53,5 @@ export default function compiler(req, res, next) {
   middlewareCache[projectName] = middleware;
 
   middleware(req, res, next);
+  watchConfig(projectName, project.configFile, projectCwd);
 };

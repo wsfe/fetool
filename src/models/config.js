@@ -18,17 +18,17 @@ class Config {
       output: {
         local: {
           path: './prd/',
-          filename: '[name]',
+          filename: '[noextname][ext]',
           chunkFilename: '[id].chunk.js'
         },
         dev: {
           path: './dev/',
-          filename: '[name]',
+          filename: '[noextname][ext]',
           chunkFilename: '[id].chunk.js'
         },
         prd: {
           path: './prd/',
-          filename: '[name]',
+          filename: '[noextname]@[chunkhash][ext]',
           chunkFilename: '[id].chunk.min.js'
         }
       },
@@ -42,13 +42,25 @@ class Config {
           use: ['html-loader']
         }, {
           test: /\.css$/,
-          use: ['style-loader', 'css-loader']
+          // use: ['style-loader', 'css-loader']
+          use: ExtractTextPlugin.extract({
+            fallback: 'style-loader',
+            use: 'css-loader'
+          })
         }, {
           test: /\.less$/,
-          use: ['style-loader', 'css-loader', 'less-loader']
+          // use: ['style-loader', 'css-loader', 'less-loader']
+          use: ExtractTextPlugin.extract({
+            fallback: 'style-loader',
+            use: ['css-loader', 'less-loader']
+          })
         }]
       },
       plugins: [
+        new ExtractTextPlugin({
+          filename: 'sytle.css',
+          allChunks: true
+        }),
         new ExtTemplatePath({
           entryExtNames: this.entryExtNames
         })
@@ -136,10 +148,13 @@ class Config {
       console.error('webpackConfig 设置错误');
       return;
     }
+
+    // 处理 context
     if (this.config.context && !sysPath.isAbsolute(this.config.context)) {
       this.config.context = sysPath.join(this.cwd, this.config.context);
     }
 
+    // 处理 alias
     if (this.config.resolve.alias) {
       let alias = this.config.resolve.alias;
       Object.keys(alias).forEach((name) => {
@@ -156,8 +171,16 @@ class Config {
     });
   }
 
-  getConfig() {
-    return Object.assign({}, this.config);
+  getConfig(env) {
+    let config = _.cloneDeep(this.config);
+    config.output = config.output[env];
+    let isExitExtractTextPlugin = config.plugins.some((plugin) => {
+      return plugin instanceof ExtractTextPlugin;
+    });
+    if (!isExitExtractTextPlugin) {
+      config.plugins.push(new ExtractTextPlugin(config.output.filename.replace('[ext]', '.css')))
+    }
+    return config;
   }
 
   getSourceType(name) {
