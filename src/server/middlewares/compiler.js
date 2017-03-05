@@ -1,4 +1,4 @@
-import { projectService } from '../services';
+import { projectService } from '../../services';
 import webpackDevMiddleware from 'webpack-dev-middleware';
 import chokidar from 'chokidar';
 

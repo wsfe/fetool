@@ -9,7 +9,7 @@ class Project {
   }
 
   getServerCompiler(cb) {
-    let config = this.config.getConfig();
+    let config = this.config.getConfig('local');
     if (cb && typeof cb === 'function') {
       config = cb(config);
     }
