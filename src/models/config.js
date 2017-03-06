@@ -44,15 +44,15 @@ class Config {
           test: /\.css$/,
           // use: ['style-loader', 'css-loader']
           use: ExtractTextPlugin.extract({
-            fallback: 'style-loader',
-            use: 'css-loader'
+            fallback: require.resolve('style-loader'),
+            use: require.resolve('css-loader')
           })
         }, {
           test: /\.less$/,
           // use: ['style-loader', 'css-loader', 'less-loader']
           use: ExtractTextPlugin.extract({
-            fallback: 'style-loader',
-            use: ['css-loader', 'less-loader']
+            fallback: require.resolve('style-loader'),
+            use: [require.resolve('css-loader'), require.resolve('less-loader')]
           })
         }]
       },
@@ -122,7 +122,7 @@ class Config {
           } else if (Array.isArray(entry)) {
             name = this.setEntryName(entry[entry.length - 1]);
           }
-          this.config.entry[name] = entry;
+          this.config.entry[name] = this.fixEntryPath(entry);
         });
       } else if (_.isPlainObject(entries)) {
         Object.keys(entries).forEach((name) => {
@@ -149,10 +149,10 @@ class Config {
 
   fixEntryPath(entry) {
     if (typeof entry === 'string') {
-      return /\w/.test(entry[0])? './' + entry: entry;
+      return /\w/.test(entry[0]) ? './' + entry : entry;
     } else if (Array.isArray(entry)) {
       entry = entry.map((value) => {
-        return /\w/.test(value[0])? './' + value: value;
+        return /\w/.test(value[0]) ? './' + value : value;
       });
     }
     return entry;
