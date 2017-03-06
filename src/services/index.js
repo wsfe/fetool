@@ -1,5 +1,5 @@
 import * as projectService from './projectService';
 
-export default {
+export {
   projectService
 };

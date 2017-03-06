@@ -66,7 +66,6 @@ class Config {
         })
       ],
       resolve: {
-        root: [],
         extensions: ['*', '.js', '.css', '.json', '.string', '.tpl'],
         alias: {}
       },
@@ -119,9 +118,9 @@ class Config {
         entries.forEach((entry) => {
           let name = '';
           if (typeof entry === 'string') {
-            name = entry;
+            name = this.setEntryName(entry);
           } else if (Array.isArray(entry)) {
-            name = entry[entry.length - 1];
+            name = this.setEntryName(entry[entry.length - 1]);
           }
           this.config.entry[name] = entry;
         });
@@ -137,6 +136,26 @@ class Config {
     } else {
       console.error('没有exports')
     }
+  }
+
+  setEntryName(name) {
+    if (name.indexOf('./') === 0) {
+      return name.substring(2);
+    } else if (name[0] == '/') {
+      return name.substring(1);
+    }
+    return name;
+  }
+
+  fixEntryPath(entry) {
+    if (typeof entry === 'string') {
+      return /\w/.test(entry[0])? './' + entry: entry;
+    } else if (Array.isArray(entry)) {
+      entry = entry.map((value) => {
+        return /\w/.test(value[0])? './' + value: value;
+      });
+    }
+    return entry;
   }
 
   setWebpackConfig(webpackConfig = {}) {
@@ -158,7 +177,7 @@ class Config {
     if (this.config.resolve.alias) {
       let alias = this.config.resolve.alias;
       Object.keys(alias).forEach((name) => {
-        alias[name] = sysPath.join(this.cwd, alias[key]);
+        alias[name] = sysPath.join(this.cwd, alias[name]);
       });
     }
 

@@ -13,7 +13,11 @@ class Project {
     if (cb && typeof cb === 'function') {
       config = cb(config);
     }
-    webpack(config);
+    return webpack(config);
+  }
+
+  getConfig(env) {
+    return this.config.getConfig(env);
   }
 }
 

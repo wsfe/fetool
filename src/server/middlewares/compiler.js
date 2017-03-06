@@ -23,7 +23,7 @@ export default function compiler(req, res, next) {
     projectName = filePaths[1], // 项目名称
     projectCwd = sysPath.join(process.cwd(), projectName), // 项目的绝对路径
     project = projectService.getProject(projectCwd, true),
-    outputDir = project.config.output.local.path || 'prd';
+    outputDir = project.getConfig('local').output.path || 'prd';
 
   // 非output.path下的资源不做任何处理
   if (filePaths[2] !== sysPath.relative(projectCwd, outputDir)) {

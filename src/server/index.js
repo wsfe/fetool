@@ -5,6 +5,10 @@ import http from 'http';
 class Server {
   constructor(options) {
     this.app = express();
+    this.app.use(express.static(process.cwd(), {
+      index: false,
+      redirect: false
+    }));
     middlewares(this.app);
     this.start(options);
   }

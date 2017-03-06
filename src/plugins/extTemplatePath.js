@@ -10,9 +10,9 @@ class ExtTemplatePath {
     compiler.plugin('compilation', (compilation, params) => {
       compilation.mainTemplate.plugin('asset-path', (path, data) => {
         let chunk = data.chunk;
+        let extName = sysPath.extname(path) || '.js';
         if (chunk && chunk.name) {
           let chunkName = chunk.name;
-          let extName = sysPath.extname(path) || '.js';
           for (let key in this.entryExtNames) {
             let exts = this.entryExtNames[key];
             if (exts.indexOf(extName) > -1) {
