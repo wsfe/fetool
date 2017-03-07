@@ -9,7 +9,7 @@ class Project {
   }
 
   getServerCompiler(cb) {
-    let config = this.config.getConfig('local');
+    let config = this.getConfig('local');
     if (cb && typeof cb === 'function') {
       config = cb(config);
     }
@@ -18,6 +18,18 @@ class Project {
 
   getConfig(env) {
     return this.config.getConfig(env);
+  }
+
+  getSourceType(name) {
+    let ext = sysPath.extname(name);
+    let type = 'js';
+    Object.keys(this.config.entryExtNames).forEach((extName) => {
+      let exts = this.config.entryExtNames[extName];
+      if (exts.indexOf(ext) > -1) {
+        type = extName;
+      }
+    });
+    return type;
   }
 }
 

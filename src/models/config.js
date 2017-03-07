@@ -202,17 +202,6 @@ class Config {
     return config;
   }
 
-  getSourceType(name) {
-    let ext = sysPath.extname(name);
-    let type = 'js';
-    Object.keys(this.entryExtNames).forEach((extName) => {
-      let exts = this.entryExtNames[extName];
-      if (exts.indexOf(ext) > -1) {
-        type = extName;
-      }
-    });
-    return type;
-  }
 }
 
 export default Config;
