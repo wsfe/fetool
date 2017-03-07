@@ -76,7 +76,20 @@ export default function compiler(req, res, next) {
   });
 
   let middleware = webpackDevMiddleware(compiler, {
-    lazy: true
+    lazy: true,
+    reporter({state, stats, options}) {
+      if (state) {
+        // log(stats.toString(options.stats));
+        if (stats.hasErrors()) {
+          error('webpack: Failed to compile.');
+        }
+        if (stats.hasWarnings()) {
+          warn('webpack: Compiled with warnings.');
+        }
+      } else {
+        log('webpack: Compiling...')
+      }
+    }
   });
 
   middlewareCache[cacheId] = middleware;
