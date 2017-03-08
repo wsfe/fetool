@@ -7,10 +7,6 @@ class Server {
   constructor(options) {
     this.app = express();
     this.app.use(favicon(sysPath.join(__dirname, '../../public', 'favicon.png')));
-    this.app.use(express.static(process.cwd(), {
-      index: false,
-      redirect: false
-    }));
     middlewares(this.app, options);
     this.start(options);
   }

@@ -82,7 +82,7 @@ export default function (options) {
       quiet: true,
       reporter({ state, stats, options }) {
         if (state) {
-          // log(stats.toString(options.stats));
+          log(stats.toString(options.stats));
           if (verbose) {
             Object.keys(stats.compilation.assets).forEach((key) => {
               log('emitted asset:', stats.compilation.assets[key].existsAt);

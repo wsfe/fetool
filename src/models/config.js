@@ -54,6 +54,13 @@ class Config {
             fallback: require.resolve('style-loader'),
             use: [require.resolve('css-loader'), require.resolve('less-loader')]
           })
+        }, {
+          test: /\.(scss|sass)$/,
+          // use: ['style-loader', 'css-loader', 'less-loader']
+          use: ExtractTextPlugin.extract({
+            fallback: require.resolve('style-loader'),
+            use: [require.resolve('css-loader'), require.resolve('sass-loader')]
+          })
         }]
       },
       plugins: [
