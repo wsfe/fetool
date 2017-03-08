@@ -1,4 +1,4 @@
-require('colors');
+import chalk from 'chalk';
 
 global.fs = require('fs');
 global.sysPath = require('path');
@@ -6,17 +6,17 @@ global.sysPath = require('path');
 global.info = console.info;
 
 global.success = function() {
-  info((' √ ' + [].slice.call(arguments).join(' ')).green);
+  info(chalk.green(' √ ' + [].slice.call(arguments).join(' ')));
 };
 
 global.warn = function() {
-  info((' ∆ ' + [].slice.call(arguments).join(' ')).yellow);  
+  info(chalk.yellow(' ∆ ' + [].slice.call(arguments).join(' ')));
 };
 
 global.error = function() {
-  info((' X ' + [].slice.call(arguments).join(' ')).red);  
+  info(chalk.bold.red(' X '), chalk.bold.red([].slice.call(arguments).join(' ')));
 };
 
 global.log = function() {
-  info('[ft] '.cyan + [].slice.call(arguments).join(' '));  
+  console.log(chalk.cyan('[ft] '), [].slice.call(arguments).join(' '));
 };

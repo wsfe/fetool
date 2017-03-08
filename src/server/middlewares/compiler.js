@@ -36,64 +36,75 @@ function getConfig(config, requestUrl, entryExtNames) {
   return false;
 };
 
-export default function compiler(req, res, next) {
-  let url = req.url, // url == '/projectname/prd/..../xxx@hash值.js|css';
-    filePaths = url.split('/'),
-    projectName = filePaths[1], // 项目名称
-    projectCwd = sysPath.join(process.cwd(), projectName), // 项目的绝对路径
-    project = projectService.getProject(projectCwd, true),
-    config = project.getConfig('local'),
-    outputDir = config.output.path || 'prd';
+export default function (options) {
+  let verbose = options.verbose;
+  return function (req, res, next) {
+    let url = req.url, // url == '/projectname/prd/..../xxx@hash值.js|css';
+      filePaths = url.split('/'),
+      projectName = filePaths[1], // 项目名称
+      projectCwd = sysPath.join(process.cwd(), projectName), // 项目的绝对路径
+      project = projectService.getProject(projectCwd, true),
+      config = project.getConfig('local'),
+      outputDir = config.output.path || 'prd';
 
-  // 非output.path下的资源不做任何处理
-  if (filePaths[2] !== sysPath.relative(projectCwd, outputDir)) {
-    next();
-    return;
-  }
-
-  url = '/' + filePaths.slice(3).join('/').replace(QUERY_REG, '').replace(VER_REG, '');
-  req.url = url;
-  let requestUrl = url.replace('.map', '').slice(1);
-  let cacheId = sysPath.join(projectName, requestUrl);
-
-  if (middlewareCache[cacheId]) {
-    middlewareCache[cacheId](req, res, next);
-    return;
-  }
-  // if (middlewareCache[projectName]) {
-  //   middlewareCache[projectName](req, res, next);
-  //   return;
-  // }
-  config = getConfig(config, requestUrl, project.config.entryExtNames);
-  if (!config) {
-    res.statusCode = 404;
-    res.end('[ft] - 资源入口未找到，请检查项目' + projectName + '的配置文件.');
-    return;
-  }
-
-  let compiler = project.getServerCompiler(() => {
-    return config;
-  });
-
-  let middleware = webpackDevMiddleware(compiler, {
-    lazy: true,
-    reporter({state, stats, options}) {
-      if (state) {
-        // log(stats.toString(options.stats));
-        if (stats.hasErrors()) {
-          error('webpack: Failed to compile.');
-        }
-        if (stats.hasWarnings()) {
-          warn('webpack: Compiled with warnings.');
-        }
-      } else {
-        log('webpack: Compiling...')
-      }
+    // 非output.path下的资源不做任何处理
+    if (filePaths[2] !== sysPath.relative(projectCwd, outputDir)) {
+      next();
+      return;
     }
-  });
 
-  middlewareCache[cacheId] = middleware;
+    url = '/' + filePaths.slice(3).join('/').replace(QUERY_REG, '').replace(VER_REG, '');
+    req.url = url;
+    let requestUrl = url.replace('.map', '').slice(1);
+    let cacheId = sysPath.join(projectName, requestUrl);
 
-  middleware(req, res, next);
-  watchConfig(projectName, project.configFile, projectCwd);
+    if (middlewareCache[cacheId]) {
+      middlewareCache[cacheId](req, res, next);
+      return;
+    }
+    // if (middlewareCache[projectName]) {
+    //   middlewareCache[projectName](req, res, next);
+    //   return;
+    // }
+    config = getConfig(config, requestUrl, project.config.entryExtNames);
+    if (!config) {
+      res.statusCode = 404;
+      res.end('[ft] - 资源入口未找到，请检查项目' + projectName + '的配置文件.');
+      return;
+    }
+
+    let compiler = project.getServerCompiler(() => {
+      return config;
+    });
+
+    let middleware = webpackDevMiddleware(compiler, {
+      lazy: true,
+      quiet: true,
+      reporter({ state, stats, options }) {
+        if (state) {
+          // log(stats.toString(options.stats));
+          if (verbose) {
+            Object.keys(stats.compilation.assets).forEach((key) => {
+              log('emitted asset:', stats.compilation.assets[key].existsAt);
+            });
+          }
+          if (stats.hasErrors()) {
+            error('webpack: Failed to compile.');
+          }
+          if (stats.hasWarnings()) {
+            warn('webpack: Compiled with warnings.');
+          }
+        } else {
+          if (verbose) {
+            log('webpack: Compiling...')
+          }
+        }
+      }
+    });
+
+    middlewareCache[cacheId] = middleware;
+
+    middleware(req, res, next);
+    watchConfig(projectName, project.configFile, projectCwd);
+  };
 };

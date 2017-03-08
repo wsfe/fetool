@@ -11,7 +11,7 @@ class Server {
       index: false,
       redirect: false
     }));
-    middlewares(this.app);
+    middlewares(this.app, options);
     this.start(options);
   }
   /**
@@ -19,8 +19,8 @@ class Server {
    */
   start(options) {
     http.createServer(this.app).listen(options.port, () => {
-      console.log('Starting up server, serving at: ', process.cwd());
-      console.log('Available on: ', 'http://127.0.0.1:' + options.port);
+      log('Starting up server, serving at: ', process.cwd());
+      log('Available on: ', 'http://127.0.0.1:' + options.port);
     });
   }
 }
