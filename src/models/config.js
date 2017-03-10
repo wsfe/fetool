@@ -59,21 +59,21 @@ class Config {
           // use: ['style-loader', 'css-loader', 'less-loader']
           use: ExtractTextPlugin.extract({
             fallback: require.resolve('style-loader'),
-            use: [require.resolve('css-loader'), require.resolve('sass-loader')]
+            use: [require.resolve('css-loader'), require.resolve('china-sass-loader')]
           })
         }]
       },
       plugins: [
-        new ExtractTextPlugin({
-          filename: 'sytle.css',
-          allChunks: true
-        }),
+        // new ExtractTextPlugin({
+        //   filename: 'sytle.css',
+        //   allChunks: true
+        // }),
         new ExtTemplatePath({
           entryExtNames: this.entryExtNames
         })
       ],
       resolve: {
-        extensions: ['*', '.js', '.css', '.json', '.string', '.tpl'],
+        extensions: ['*', '.js', '.css', '.scss', '.json', '.string', '.tpl'],
         alias: {}
       },
       devtool: 'cheap-source-map'
