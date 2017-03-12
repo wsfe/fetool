@@ -1,18 +1,15 @@
-import webpackMerge from 'webpack-merge';
 import _ from 'lodash';
 import ExtTemplatePath from '../plugins/extTemplatePath';
 import ExtractTextPlugin from 'extract-text-webpack-plugin';
 
 class Config {
-  constructor(cwd, configFile) {
+  constructor(cwd, userConfig) {
     this.cwd = cwd;
-    this.configFile = configFile;
-    this.entryGroups = {};
     this.entryExtNames = {
       css: ['.css', '.scss', '.sass', '.less'],
       js: ['.js', '.jsx', '.vue']
     };
-    this.config = {
+    this.baseConfig = {
       context: sysPath.join(cwd, 'src'),
       entry: {},
       output: {
@@ -40,70 +37,34 @@ class Config {
         }, {
           test: /\.(html|string|tpl)$/,
           use: ['html-loader']
-        }, {
-          test: /\.css$/,
-          // use: ['style-loader', 'css-loader']
-          use: ExtractTextPlugin.extract({
-            fallback: require.resolve('style-loader'),
-            use: require.resolve('css-loader')
-          })
-        }, {
-          test: /\.less$/,
-          // use: ['style-loader', 'css-loader', 'less-loader']
-          use: ExtractTextPlugin.extract({
-            fallback: require.resolve('style-loader'),
-            use: [require.resolve('css-loader'), require.resolve('less-loader')]
-          })
-        }, {
-          test: /\.(scss|sass)$/,
-          // use: ['style-loader', 'css-loader', 'less-loader']
-          use: ExtractTextPlugin.extract({
-            fallback: require.resolve('style-loader'),
-            use: [require.resolve('css-loader'), require.resolve('china-sass-loader')]
-          })
         }]
       },
-      plugins: [
-        // new ExtractTextPlugin({
-        //   filename: 'sytle.css',
-        //   allChunks: true
-        // }),
-        new ExtTemplatePath({
-          entryExtNames: this.entryExtNames
-        })
-      ],
+      plugins: [],
       resolve: {
         extensions: ['*', '.js', '.css', '.scss', '.json', '.string', '.tpl'],
         alias: {}
       },
       devtool: 'cheap-source-map'
     };
-    this.readConfig();
+    this.extendConfig = {};
+    init();
   }
 
-  getUserConfig(module) {
-    delete require.cache[require.resolve(module)];
-    return require(module);
-  }
-
-  readConfig() {
-    let userConfig = this.getUserConfig(this.configFile);
-    if (!userConfig) {
-      console.error('请设置配置文件');
-      return this;
+  init() {
+    this.setEntryExtNames(this.userConfig.entryExtNames);
+    this.baseConfig.plugins.push(new ExtTemplatePath({
+      entryExtNames: this.entryExtNames
+    }));
+    this.extendConfig = userConfig.config;
+    if (typeof this.extendConfig === 'function') {
+      this.extendConfig = this.extendConfig.call(this, this.cwd);
     }
-    this.setEntryExtNames(userConfig.entryExtNames);
-    let extendConfig = userConfig.config;
-    if (typeof extendConfig === 'function') {
-      extendConfig = extendConfig.call(this, this.cwd);
-    }
-    if (typeof extendConfig !== 'object') {
+    if (typeof this.extendConfig !== 'object') {
       console.error('设置有误，请参考文档');
       return this;
     }
-
-    this.setWebpackConfig(extendConfig.webpackConfig);
-    this.setExports(extendConfig.exports);
+    this.setExports(this.extendConfig.exports);
+    this.config = _.cloneDeep(this.baseConfig);
   }
 
   setEntryExtNames(entryExtNames) {
@@ -129,14 +90,14 @@ class Config {
           } else if (Array.isArray(entry)) {
             name = this.setEntryName(entry[entry.length - 1]);
           }
-          this.config.entry[name] = this.fixEntryPath(entry);
+          this.baseConfig.entry[name] = this.fixEntryPath(entry);
         });
       } else if (_.isPlainObject(entries)) {
         Object.keys(entries).forEach((name) => {
           if (sysPath.extname(name) !== '.js') {
-            this.config.entry[name + '.js'] = entries[name];
+            this.baseConfig.entry[name + '.js'] = entries[name];
           } else {
-            this.config.entry[name] = entries[name];
+            this.baseConfig.entry[name] = entries[name];
           }
         });
       }
@@ -165,50 +126,39 @@ class Config {
     return entry;
   }
 
-  setWebpackConfig(webpackConfig = {}) {
-    if (typeof webpackConfig === 'object') {
-      webpackMerge(this.config, webpackConfig);
-    } else if (typeof webpackConfig === 'function') {
-      this.config = webpackConfig(this.config);
-    } else {
-      console.error('webpackConfig 设置错误');
-      return;
-    }
+  getConfig(env) {
+    let config = _.cloneDeep(this.baseConfig);
+    config.output = config.output[env];
+    return config;
+  }
 
-    // 处理 context
-    if (this.config.context && !sysPath.isAbsolute(this.config.context)) {
-      this.config.context = sysPath.join(this.cwd, this.config.context);
+  // 处理 context
+  fixContext(config) {
+    if (config.context && !sysPath.isAbsolute(config.context)) {
+      config.context = sysPath.join(cwd, config.context);
     }
+  }
 
-    // 处理 alias
-    if (this.config.resolve.alias) {
-      let alias = this.config.resolve.alias;
+  // 处理 alias
+  fixAlias(config) {
+    if (config.resolve.alias) {
+      let alias = config.resolve.alias;
       Object.keys(alias).forEach((name) => {
         alias[name] = sysPath.join(this.cwd, alias[name]);
       });
     }
+  }
 
-    let output = this.config.output;
+  // 处理output
+  fixOutput(config) {
+    let output = config.output;
     Object.keys(output).forEach((env) => {
       let op = output[env];
       if (op.path && !sysPath.isAbsolute(op.path)) {
-        op.path = sysPath.join(this.cwd, op.path);
+        op.path = sysPath.join(cwd, op.path);
       }
     });
   }
-
-  getConfig(env) {
-    let config = _.cloneDeep(this.config);
-    config.output = config.output[env];
-    let isExitExtractTextPlugin = config.plugins.some((plugin) => {
-      return plugin instanceof ExtractTextPlugin;
-    });
-    if (!isExitExtractTextPlugin) {
-      config.plugins.push(new ExtractTextPlugin(config.output.filename.replace('[ext]', '.css')))
-    }
-    return config;
-  }
-
 }
 
 export default Config;

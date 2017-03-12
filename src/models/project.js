@@ -1,11 +1,19 @@
-import Config from './config';
+import SingleConfig from './single.config';
+import MutliConfig from './mutli.config';
 import webpack from 'webpack';
 
 class Project {
   constructor(cwd) {
     this.cwd = cwd;
     this.configFile = sysPath.resolve(this.cwd, 'ft.config');
-    this.config = new Config(cwd, this.configFile);
+    this.userConfig = this.getUserConfig(this.configFile);
+    this.model = this.userConfig.model || 'mutli';
+    this.config = new Config(cwd, this.userConfig);
+  }
+
+  getUserConfig(module) {
+    delete require.cache[require.resolve(module)];
+    return require(module);
   }
 
   getServerCompiler(cb) {

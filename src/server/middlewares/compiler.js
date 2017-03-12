@@ -58,14 +58,14 @@ export default function (options) {
     let requestUrl = url.replace('.map', '').slice(1);
     let cacheId = sysPath.join(projectName, requestUrl);
 
-    if (middlewareCache[cacheId]) {
-      middlewareCache[cacheId](req, res, next);
-      return;
-    }
     // if (middlewareCache[projectName]) {
     //   middlewareCache[projectName](req, res, next);
     //   return;
     // }
+    if (middlewareCache[cacheId]) {
+      middlewareCache[cacheId](req, res, next);
+      return;
+    }
     config = getConfig(config, requestUrl, project.config.entryExtNames);
     if (!config) {
       res.statusCode = 404;
