@@ -6,9 +6,13 @@ class Project {
   constructor(cwd) {
     this.cwd = cwd;
     this.configFile = sysPath.resolve(this.cwd, 'ft.config');
-    this.userConfig = this.getUserConfig(this.configFile);
-    this.model = this.userConfig.model || 'mutli';
-    this.config = new Config(cwd, this.userConfig);
+    let userConfig = this.getUserConfig(this.configFile);
+    this.model = userConfig.model || 'mutli';
+    if (this.model === 'single') {
+      this.config = new SingleConfig(cwd, userConfig);
+    } else if (this.model === 'mutli') {
+      this.config = new MutliConfig(cwd, userConfig);
+    }
   }
 
   getUserConfig(module) {
@@ -24,8 +28,8 @@ class Project {
     return webpack(config);
   }
 
-  getConfig(env) {
-    return this.config.getConfig(env);
+  getConfig(env, type) {
+    return this.config.getConfig(env, type);
   }
 
   getSourceType(name) {

@@ -44,8 +44,8 @@ export default function (options) {
       projectName = filePaths[1], // 项目名称
       projectCwd = sysPath.join(process.cwd(), projectName), // 项目的绝对路径
       project = projectService.getProject(projectCwd, true),
-      config = project.getConfig('local'),
-      outputDir = config.output.path || 'prd';
+      baseConfig = project.getConfig('local', 'base'),
+      outputDir = baseConfig.output.path || 'prd';
 
     // 非output.path下的资源不做任何处理
     if (filePaths[2] !== sysPath.relative(projectCwd, outputDir)) {
@@ -66,7 +66,7 @@ export default function (options) {
       middlewareCache[cacheId](req, res, next);
       return;
     }
-    config = getConfig(config, requestUrl, project.config.entryExtNames);
+    let config = getConfig(project.getConfig('local', 'js'), requestUrl, project.config.entryExtNames);
     if (!config) {
       res.statusCode = 404;
       res.end('[ft] - 资源入口未找到，请检查项目' + projectName + '的配置文件.');
