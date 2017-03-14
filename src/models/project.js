@@ -1,16 +1,17 @@
 import SingleConfig from './single.config';
 import MutliConfig from './mutli.config';
 import webpack from 'webpack';
+import _ from 'lodash';
 
 class Project {
   constructor(cwd) {
     this.cwd = cwd;
     this.configFile = sysPath.resolve(this.cwd, 'ft.config');
     let userConfig = this.getUserConfig(this.configFile);
-    this.model = userConfig.model || 'mutli';
-    if (this.model === 'single') {
+    this.mode = userConfig.mode || MUTLI_MODE;
+    if (this.mode === SINGLE_MODE) {
       this.config = new SingleConfig(cwd, userConfig);
-    } else if (this.model === 'mutli') {
+    } else if (this.mode === MUTLI_MODE) {
       this.config = new MutliConfig(cwd, userConfig);
     }
   }
@@ -20,9 +21,18 @@ class Project {
     return require(module);
   }
 
-  getServerCompiler(cb) {
-    let config = this.getConfig('local');
-    if (cb && typeof cb === 'function') {
+  /**
+   * 
+   * @param {cb: funtion, type: 'base|js|css'} cb，主要是对config进行再加工，type：主要是指定哪一种配置，分为三种，baseConfig,jsConfig,cssConfig
+   */
+  getServerCompiler({cb, type}) {
+    let config = {};
+    if (this.mode === SINGLE_MODE) {
+      config = this.getConfig('local');
+    } else {
+      config = this.getConfig('local', type);
+    }
+    if (_.isFunction(cb)) {
       config = cb(config);
     }
     return webpack(config);
@@ -32,17 +42,6 @@ class Project {
     return this.config.getConfig(env, type);
   }
 
-  getSourceType(name) {
-    let ext = sysPath.extname(name);
-    let type = 'js';
-    Object.keys(this.config.entryExtNames).forEach((extName) => {
-      let exts = this.config.entryExtNames[extName];
-      if (exts.indexOf(ext) > -1) {
-        type = extName;
-      }
-    });
-    return type;
-  }
 }
 
 export default Project;

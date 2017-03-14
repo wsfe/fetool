@@ -7,6 +7,7 @@ const QUERY_REG = /\?.+$/;
 const VER_REG = /@[\d\w]+(?=\.\w+)/;
 let middlewareCache = {};
 let watchCache = {};
+let verbose = false;
 
 function watchConfig(projectName, configFilePath, projectCwd) {
   if (!watchCache[projectName]) {
@@ -18,12 +19,12 @@ function watchConfig(projectName, configFilePath, projectCwd) {
   }
 }
 
-function getConfig(config, requestUrl, entryExtNames) {
+function getMulitModeConfig(config, requestUrl) {
   let entryKey = '';
   let reqUrlMatch = requestUrl.match(/^(.+)\.(\w+)$/);
   Object.keys(config.entry).some((key) => {
     let keyMatch = key.match(/^(.+)(\.\w+)$/);
-    if (reqUrlMatch[1] === keyMatch[1] && entryExtNames[reqUrlMatch[2]].indexOf(keyMatch[2]) > -1) {
+    if (reqUrlMatch[1] === keyMatch[1]) { // 除去extname之后如果一样的话
       entryKey = key;
       return true;
     }
@@ -33,11 +34,98 @@ function getConfig(config, requestUrl, entryExtNames) {
     config.entry = { [entryKey]: config.entry[entryKey] };
     return config;
   }
-  return false;
+  return false; //如果没有找到config呢
 };
 
+/**
+ * 获取webpack-dev-middleware中间件
+ * @param {webpack编译器} compiler 
+ */
+function getMiddleWare(compiler) {
+  return webpackDevMiddleware(compiler, {
+    lazy: true,
+    quiet: true,
+    reporter({ state, stats, options }) {
+      if (state) {
+        // log(stats.toString(options.stats));
+        if (verbose) {
+          Object.keys(stats.compilation.assets).forEach((key) => {
+            log('emitted asset:', stats.compilation.assets[key].existsAt);
+          });
+        }
+        if (stats.hasErrors()) {
+          error('webpack: Failed to compile.');
+        }
+        if (stats.hasWarnings()) {
+          warn('webpack: Compiled with warnings.');
+        }
+      } else {
+        if (verbose) {
+          log('webpack: Compiling...')
+        }
+      }
+    }
+  });
+}
+
+/**
+ * 单页模式的编译
+ * @param {Project对象} project 
+ * @param {project名字} projectName 
+ */
+function singleMode(project, projectName) {
+  return (req, res, next) => {
+    if (middlewareCache[projectName]) {
+      middlewareCache[projectName](req, res, next);
+      return;
+    }
+    let compiler = project.getServerCompiler();
+    let middleware = getMiddleWare(compiler);
+    middlewareCache[projectName] = middleware;
+    middleware(req, res, next);
+  };
+}
+
+/**
+ * 
+ * @param {Project对象} project 
+ * @param {project名字} projectName 
+ * @param {请求的url地址，有经过处理了} url 
+ */
+function multiMode(project, projectName, url, filePaths) {
+  url = '/' + filePaths.slice(3).join('/').replace(QUERY_REG, '').replace(VER_REG, '');
+  return (req, res, next) => {
+    req.url = url;
+    let requestUrl = url.replace('.map', '').slice(1);
+    let cacheId = sysPath.join(projectName, requestUrl);
+
+    if (middlewareCache[cacheId]) {
+      middlewareCache[cacheId](req, res, next);
+      return;
+    }
+
+    let newConfig;
+    let compiler = project.getServerCompiler({
+      type: sysPath.extname(requestUrl).substr(1),
+      cb: (config) => {
+        newConfig = getMulitModeConfig(config, requestUrl);
+        return newConfig ? newConfig : config;
+      }
+    });
+    if (!newConfig) {
+      res.statusCode = 404;
+      res.end('[ft] - 资源入口未找到，请检查项目' + projectName + '的配置文件.');
+      return;
+    }
+
+    let middleware = getMiddleWare(compiler);
+    middlewareCache[cacheId] = middleware;
+    middleware(req, res, next);
+  };
+}
+
 export default function (options) {
-  let verbose = options.verbose;
+  verbose = options.verbose;
   return function (req, res, next) {
     let url = req.url, // url == '/projectname/prd/..../xxx@hash值.js|css';
       filePaths = url.split('/'),
@@ -48,63 +136,21 @@ export default function (options) {
       outputDir = baseConfig.output.path || 'prd';
 
     // 非output.path下的资源不做任何处理
-    if (filePaths[2] !== sysPath.relative(projectCwd, outputDir)) {
+    // if (filePaths[2] !== sysPath.relative(projectCwd, outputDir)) { // 不知道为毛之前可以用relative这个函数，现在就不行了
+    if (filePaths[2] !== outputDir.replace(/\W*(\w+)\W*/g, ($0, $1) => { return $1; })) { // 暂时这么解决
       next();
       return;
     }
 
-    url = '/' + filePaths.slice(3).join('/').replace(QUERY_REG, '').replace(VER_REG, '');
-    req.url = url;
-    let requestUrl = url.replace('.map', '').slice(1);
-    let cacheId = sysPath.join(projectName, requestUrl);
-
-    // if (middlewareCache[projectName]) {
-    //   middlewareCache[projectName](req, res, next);
-    //   return;
-    // }
-    if (middlewareCache[cacheId]) {
-      middlewareCache[cacheId](req, res, next);
-      return;
-    }
-    let config = getConfig(project.getConfig('local', 'js'), requestUrl, project.config.entryExtNames);
-    if (!config) {
-      res.statusCode = 404;
-      res.end('[ft] - 资源入口未找到，请检查项目' + projectName + '的配置文件.');
-      return;
+    if (project.mode === SINGLE_MODE) {
+      singleMode(project, projectName)(req, res, next);
     }
 
-    let compiler = project.getServerCompiler(() => {
-      return config;
-    });
+    if (project.mode === MUTLI_MODE) {
+      multiMode(project, projectName, url, filePaths)(req, res, next);
+    }
 
-    let middleware = webpackDevMiddleware(compiler, {
-      lazy: true,
-      quiet: true,
-      reporter({ state, stats, options }) {
-        if (state) {
-          // log(stats.toString(options.stats));
-          if (verbose) {
-            Object.keys(stats.compilation.assets).forEach((key) => {
-              log('emitted asset:', stats.compilation.assets[key].existsAt);
-            });
-          }
-          if (stats.hasErrors()) {
-            error('webpack: Failed to compile.');
-          }
-          if (stats.hasWarnings()) {
-            warn('webpack: Compiled with warnings.');
-          }
-        } else {
-          if (verbose) {
-            log('webpack: Compiling...')
-          }
-        }
-      }
-    });
-
-    middlewareCache[cacheId] = middleware;
-
-    middleware(req, res, next);
     watchConfig(projectName, project.configFile, projectCwd);
+
   };
 };

@@ -3,6 +3,9 @@ import chalk from 'chalk';
 global.fs = require('fs');
 global.sysPath = require('path');
 
+global.SINGLE_MODE = 'single';
+global.MUTLI_MODE = 'mutli';
+
 global.info = console.info;
 
 global.success = function() {

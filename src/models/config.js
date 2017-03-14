@@ -5,6 +5,7 @@ import ExtractTextPlugin from 'extract-text-webpack-plugin';
 class Config {
   constructor(cwd, userConfig) {
     this.cwd = cwd;
+    this.userConfig = userConfig;
     this.entryExtNames = {
       css: ['.css', '.scss', '.sass', '.less'],
       js: ['.js', '.jsx', '.vue']
@@ -47,7 +48,7 @@ class Config {
       devtool: 'cheap-source-map'
     };
     this.extendConfig = {};
-    init();
+    this.init();
   }
 
   init() {
@@ -55,7 +56,7 @@ class Config {
     this.baseConfig.plugins.push(new ExtTemplatePath({
       entryExtNames: this.entryExtNames
     }));
-    this.extendConfig = userConfig.config;
+    this.extendConfig = this.userConfig.config;
     if (typeof this.extendConfig === 'function') {
       this.extendConfig = this.extendConfig.call(this, this.cwd);
     }
@@ -155,9 +156,21 @@ class Config {
     Object.keys(output).forEach((env) => {
       let op = output[env];
       if (op.path && !sysPath.isAbsolute(op.path)) {
-        op.path = sysPath.join(cwd, op.path);
+        op.path = sysPath.join(this.cwd, op.path);
       }
     });
+  }
+
+  getSourceType(name) {
+    let ext = sysPath.extname(name);
+    let type = 'js';
+    Object.keys(this.entryExtNames).forEach((extName) => {
+      let exts = this.entryExtNames[extName];
+      if (exts.indexOf(ext) > -1) {
+        type = extName;
+      }
+    });
+    return type;
   }
 }
 

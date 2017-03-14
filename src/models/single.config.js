@@ -27,7 +27,7 @@ class SingleConfig extends Config {
       test: /\.(scss|sass)$/,
       use: ExtractTextPlugin.extract({
         fallback: require.resolve('style-loader'),
-        use: [require.resolve('css-loader'), require.resolve('china-sass-loader')]
+        use: [require.resolve('css-loader'), require.resolve('sass-loader')]
       })
     }])
   }
