@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import ora from 'ora';
 
 global.fs = require('fs');
 global.sysPath = require('path');
@@ -7,6 +8,8 @@ global.SINGLE_MODE = 'single';
 global.MUTLI_MODE = 'mutli';
 
 global.info = console.info;
+
+global.spinner = ora();
 
 global.success = function() {
   info(chalk.green(' √ ' + [].slice.call(arguments).join(' ')));

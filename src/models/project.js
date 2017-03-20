@@ -1,5 +1,6 @@
 import SingleConfig from './single.config';
 import MutliConfig from './mutli.config';
+import progressPlugin from '../plugins/progress';
 import webpack from 'webpack';
 import _ from 'lodash';
 
@@ -35,6 +36,7 @@ class Project {
     if (_.isFunction(cb)) {
       config = cb(config);
     }
+    config.plugins.push(progressPlugin);
     return webpack(config);
   }
 

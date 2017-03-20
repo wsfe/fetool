@@ -47,17 +47,22 @@ function getMiddleWare(compiler) {
     quiet: true,
     reporter({ state, stats, options }) {
       if (state) {
-        // log(stats.toString(options.stats));
         if (verbose) {
           Object.keys(stats.compilation.assets).forEach((key) => {
             log('emitted asset:', stats.compilation.assets[key].existsAt);
           });
         }
         if (stats.hasErrors()) {
-          error('webpack: Failed to compile.');
+          spinner.text = 'webpack: Failed to compile.';
+          spinner.fail();
+          spinner.text = '';
+          log(stats.toString(options.stats));
         }
         if (stats.hasWarnings()) {
-          warn('webpack: Compiled with warnings.');
+          spinner.text = 'webpack: Compiled with warnings.';
+          spinner.warn();
+          spinner.text = '';
+          log(stats.toString(options.stats));
         }
       } else {
         if (verbose) {

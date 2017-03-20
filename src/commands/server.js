@@ -7,7 +7,7 @@ export default function server(program) {
     .option('-s, --https', '开启 https 服务')
     .option('-v, --verbose', '显示详细编译信息')
     .action((options) => {
-      options.port =  options.port || 80;
+      options.port =  options.port || 8081;
       new Server(options);
       // console.log('process.cwd', process.cwd());
     });
