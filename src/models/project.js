@@ -44,6 +44,10 @@ class Project {
     return this.config.getConfig(env, type);
   }
 
+  pack(options) {}
+
+  build(options) {}
+
 }
 
 export default Project;
