@@ -1,8 +1,9 @@
+import webpack from 'webpack';
+import _ from 'lodash';
 import SingleConfig from './single.config';
 import MutliConfig from './mutli.config';
 import progressPlugin from '../plugins/progress';
-import webpack from 'webpack';
-import _ from 'lodash';
+import utils from '../utils';
 
 class Project {
   constructor(cwd) {
@@ -26,7 +27,7 @@ class Project {
    * 
    * @param {cb: funtion, type: 'base|js|css'} cb，主要是对config进行再加工，type：主要是指定哪一种配置，分为三种，baseConfig,jsConfig,cssConfig
    */
-  getServerCompiler({cb, type}) {
+  getServerCompiler({ cb, type }) {
     let config = {};
     if (this.mode === SINGLE_MODE) {
       config = this.getConfig('local');
@@ -44,9 +45,89 @@ class Project {
     return this.config.getConfig(env, type);
   }
 
-  pack(options) {}
+  pack(options) {
+    let startTime = Date.now();
+    let promise = null;
+    if (this.mode === SINGLE_MODE) {
+      let config = this.getConfig('dev');
+      this._setPackConfig(config);
+      try {
+        utils.fs.deleteFolderRecursive(config.output.path);
+      } catch (e) {
+        error(e);
+      }
+      promise = this._getPackPromise([config]);
+    } else {
+      let cssConfig = this.getConfig('dev', 'css'),
+        jsConfig = this.getConfig('dev', 'js');
+      this._setPackConfig(cssConfig);
+      this._setPackConfig(jsConfig);
+      try {
+        utils.fs.deleteFolderRecursive(cssConfig.output.path);
+      } catch (e) {
+        error(e);
+      }
+      promise = this._getPackPromise([cssConfig, jsConfig]);
+    }
+    promise.then((statsArr) => {
+      statsArr.forEach((stats) => {
+        this._logPack(stats);
+      });
+      let packDuration = Date.now() - packStartTime > 1000
+        ? Math.floor((Date.now() - packStartTime) / 1000) + 's'
+        : Date.now() - packStartTime + 'ms';
+      log('Packing Finished in ' + packDuration + '.\n');
+    }).catch((reason) => {
+      error(reason.stack || reason);
+      if (reason.details) {
+        error(reason.details);
+      }
+    });
+  }
 
-  build(options) {}
+  _logPack(stats) {
+    let info = stats.toJson({ errorDetails: false });
+
+    if (stats.hasErrors()) {
+      info.errors.map((err) => {
+        error(err + '\n');
+      });
+    }
+
+    if (stats.hasWarnings()) {
+      info.warnings.map((warning) => {
+        warn(warning + '\n');
+      });
+    }
+
+    stats.assets.map(asset => {
+      
+    });
+  }
+
+  _setPackConfig(config) {
+    config.plugins.push(progressPlugin);
+  }
+
+  _getPackPromise(configs) {
+    let promises = [];
+    configs.forEach((config) => {
+      let promise = new Promise((resolve, reject) => {
+        webpack(config, (err, stats) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          resolve(stats);
+        });
+      });
+
+      promises.push(promise);
+    });
+    return Promise.all(promises);
+  }
+
+  build(options) { }
 
 }
 
