@@ -3,6 +3,7 @@ import _ from 'lodash';
 import SingleConfig from './single.config';
 import MutliConfig from './mutli.config';
 import progressPlugin from '../plugins/progress';
+import cssIgnoreJSPlugin from '../plugins/cssIgnoreJS';
 import utils from '../utils';
 
 class Project {
@@ -60,6 +61,7 @@ class Project {
     } else {
       let cssConfig = this.getConfig('dev', 'css'),
         jsConfig = this.getConfig('dev', 'js');
+      cssConfig.plugins.push(new cssIgnoreJSPlugin());
       this._setPackConfig(cssConfig);
       this._setPackConfig(jsConfig);
       try {
@@ -73,9 +75,9 @@ class Project {
       statsArr.forEach((stats) => {
         this._logPack(stats);
       });
-      let packDuration = Date.now() - packStartTime > 1000
-        ? Math.floor((Date.now() - packStartTime) / 1000) + 's'
-        : Date.now() - packStartTime + 'ms';
+      let packDuration = Date.now() - startTime > 1000
+        ? Math.floor((Date.now() - startTime) / 1000) + 's'
+        : Date.now() - startTime + 'ms';
       log('Packing Finished in ' + packDuration + '.\n');
     }).catch((reason) => {
       error(reason.stack || reason);
@@ -100,8 +102,12 @@ class Project {
       });
     }
 
-    stats.assets.map(asset => {
-      
+    info.assets.map(asset => {
+      let fileSize = asset.size;
+      fileSize = fileSize > 1024
+        ? (fileSize / 1024).toFixed(2) + ' KB'
+        : fileSize + ' Bytes';
+      log(`- ${asset.name} - ${fileSize}`);
     });
   }
 
