@@ -1,10 +1,14 @@
 import webpack from 'webpack';
 import _ from 'lodash';
+import os from 'os';
+import ComputeCluster from 'compute-cluster';
 import SingleConfig from './single.config';
 import MutliConfig from './mutli.config';
 import progressPlugin from '../plugins/progress';
 import cssIgnoreJSPlugin from '../plugins/cssIgnoreJS';
 import utils from '../utils';
+
+const numCPUs = os.cpus().length;
 
 class Project {
   constructor(cwd) {
@@ -50,26 +54,26 @@ class Project {
     let startTime = Date.now();
     let promise = null;
     if (this.mode === SINGLE_MODE) {
-      let config = this.getConfig('dev');
-      this._setPackConfig(config);
+      let config = this.getConfig(options.min? 'prd': 'dev');
+      this._setPackConfig(config, options);
       try {
         utils.fs.deleteFolderRecursive(config.output.path);
       } catch (e) {
         error(e);
       }
-      promise = this._getPackPromise([config]);
+      promise = this._getPackPromise([config], options);
     } else {
-      let cssConfig = this.getConfig('dev', 'css'),
-        jsConfig = this.getConfig('dev', 'js');
+      let cssConfig = this.getConfig(options.min? 'prd': 'dev', 'css'),
+        jsConfig = this.getConfig(options.min? 'prd': 'dev', 'js');
       cssConfig.plugins.push(new cssIgnoreJSPlugin());
-      this._setPackConfig(cssConfig);
-      this._setPackConfig(jsConfig);
+      this._setPackConfig(cssConfig, options);
+      this._setPackConfig(jsConfig, options);
       try {
         utils.fs.deleteFolderRecursive(cssConfig.output.path);
       } catch (e) {
         error(e);
       }
-      promise = this._getPackPromise([cssConfig, jsConfig]);
+      promise = this._getPackPromise([cssConfig, jsConfig], options);
     }
     promise.then((statsArr) => {
       statsArr.forEach((stats) => {
@@ -111,11 +115,14 @@ class Project {
     });
   }
 
-  _setPackConfig(config) {
+  _setPackConfig(config, options) {
+    if (options.min) {
+      config.devtool = '';
+    }
     config.plugins.push(progressPlugin);
   }
 
-  _getPackPromise(configs) {
+  _getPackPromise(configs, options) {
     let promises = [];
     configs.forEach((config) => {
       let promise = new Promise((resolve, reject) => {
@@ -123,6 +130,16 @@ class Project {
           if (err) {
             reject(err);
             return;
+          }
+          if (options.min) {
+            let cc = new ComputeCluster({
+              module: sysPath.resolve(__dirname, '../utils.uglifyWorker.js'),
+              max_backlog: -1,
+              max_processes: numCPUs
+            }, (err, response) => {
+
+            });
+            spinner.start();
           }
           resolve(stats);
         });
