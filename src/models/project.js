@@ -54,7 +54,7 @@ class Project {
     let startTime = Date.now();
     let promise = null;
     if (this.mode === SINGLE_MODE) {
-      let config = this.getConfig(options.min? 'prd': 'dev');
+      let config = this.getConfig(options.min ? 'prd' : 'dev');
       this._setPackConfig(config, options);
       try {
         utils.fs.deleteFolderRecursive(config.output.path);
@@ -63,8 +63,8 @@ class Project {
       }
       promise = this._getPackPromise([config], options);
     } else {
-      let cssConfig = this.getConfig(options.min? 'prd': 'dev', 'css'),
-        jsConfig = this.getConfig(options.min? 'prd': 'dev', 'js');
+      let cssConfig = this.getConfig(options.min ? 'prd' : 'dev', 'css'),
+        jsConfig = this.getConfig(options.min ? 'prd' : 'dev', 'js');
       cssConfig.plugins.push(new cssIgnoreJSPlugin());
       this._setPackConfig(cssConfig, options);
       this._setPackConfig(jsConfig, options);
@@ -132,14 +132,7 @@ class Project {
             return;
           }
           if (options.min) {
-            let cc = new ComputeCluster({
-              module: sysPath.resolve(__dirname, '../utils.uglifyWorker.js'),
-              max_backlog: -1,
-              max_processes: numCPUs
-            }, (err, response) => {
-
-            });
-            spinner.start();
+            
           }
           resolve(stats);
         });
@@ -148,6 +141,15 @@ class Project {
       promises.push(promise);
     });
     return Promise.all(promises);
+  }
+
+  _min(stats) {
+    let cc = new ComputeCluster({
+      module: sysPath.resolve(__dirname, '../utils.uglifyWorker.js'),
+      max_backlog: -1,
+      max_processes: numCPUs
+    });
+    spinner.start();
   }
 
   build(options) { }

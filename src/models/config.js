@@ -17,17 +17,20 @@ class Config {
         local: {
           path: './prd/',
           filename: '[noextname][ext]',
-          chunkFilename: '[id].chunk.js'
+          chunkFilename: '[id].chunk.js',
+          publicPath: '//' + path.join('img.chinanetcenter.com', 'projectDir', 'prd/')
         },
         dev: {
           path: './dev/',
           filename: '[noextname][ext]',
-          chunkFilename: '[id].chunk.js'
+          chunkFilename: '[id].chunk.js',
+          publicPath: '//' + path.join('img.chinanetcenter.com', 'projectDir', 'dev/')
         },
         prd: {
           path: './prd/',
           filename: '[noextname]@[chunkhash][ext]',
-          chunkFilename: '[id].chunk.min.js'
+          chunkFilename: '[id].chunk.min.js',
+          publicPath: '//' + path.join('img.chinanetcenter.com', 'projectDir', 'prd/')
         }
       },
       module: {
