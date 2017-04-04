@@ -1,5 +1,7 @@
 import chalk from 'chalk';
 import ora from 'ora';
+import logSymbols from 'log-symbols';
+import moment from 'moment';
 
 global.fs = require('fs');
 global.sysPath = require('path');
@@ -26,3 +28,7 @@ global.error = function() {
 global.log = function() {
   console.log(chalk.cyan('[ft] '), [].slice.call(arguments).join(' '));
 };
+
+global.logWithTime = function() {
+  info(logSymbols.info + ' [' + moment().format('YY.MM.DD HH:mm:ss') + '] ' + [].slice.call(arguments).join(' '));
+}

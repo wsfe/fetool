@@ -132,7 +132,9 @@ class Project {
             return;
           }
           if (options.min) {
-            this._min(stats, options.cwd);
+            this._min(stats, options.cwd).then(() => {
+              resolve(stats);
+            });
           } else {
             resolve(stats);
           }
@@ -150,38 +152,43 @@ class Project {
       max_backlog: -1,
       max_processes: numCPUs
     });
+    let resolve;
+    let promise = new Promise((res, rej) => {
+      resolve = res;
+    });
     let assets = stats.toJson({
       errorDetails: false
     }).assets;
-
+    let processToRun = assets.length;
     assets.forEach((asset) => {
-      new Promise((resolve, reject) => {
-        cc.enqueue({
-          cwd,
-          assetName: asset.name
-        }, (err, response) => {
-          if (err) {
-            spinner.text = '';
-            spinner.stop();
-            info('/n');
-            spinner.text = `ComputeCluster error: ${err.message}`;
-            spinner.fail();
-            reject(err);
-          } else if (response.error) {
-            spinner.text = '';
-            spinner.stop();
-            info('\n');
-            spinner.text = `error occured while minifying ${response.error.assetName}`;
-            spinner.fail();
-            error(`line: ${response.error.line}, col: ${response.error.col} ${response.error.message} \n`);
-            reject(response.error);
-          }
+      cc.enqueue({
+        cwd,
+        assetName: asset.name
+      }, (err, response) => {
+        if (response.error) {
+          spinner.text = '';
+          spinner.stop();
+          info('\n');
+          spinner.text = `error occured while minifying ${response.error.assetName}`;
+          spinner.fail();
+          error(`line: ${response.error.line}, col: ${response.error.col} ${response.error.message} \n`);
+          spinner.start();
+        }
+        processToRun--;
+        spinner.text = `[Minify] ${assets.length -
+          processToRun}/${assets.length} assets`;
+        if (processToRun === 0) {
+          cc.exit();
+          spinner.stop();
+          logWithTime('minify complete!');
           resolve();
-        });
+        }
       });
     });
 
     spinner.start();
+
+    return promise;
   }
 
   build(options) { }
