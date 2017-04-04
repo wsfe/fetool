@@ -132,9 +132,10 @@ class Project {
             return;
           }
           if (options.min) {
-            
+            this._min(stats, options.cwd);
+          } else {
+            resolve(stats);
           }
-          resolve(stats);
         });
       });
 
@@ -143,12 +144,43 @@ class Project {
     return Promise.all(promises);
   }
 
-  _min(stats) {
+  _min(stats, cwd) {
     let cc = new ComputeCluster({
       module: sysPath.resolve(__dirname, '../utils.uglifyWorker.js'),
       max_backlog: -1,
       max_processes: numCPUs
     });
+    let assets = stats.toJson({
+      errorDetails: false
+    }).assets;
+
+    assets.forEach((asset) => {
+      new Promise((resolve, reject) => {
+        cc.enqueue({
+          cwd,
+          assetName: asset.name
+        }, (err, response) => {
+          if (err) {
+            spinner.text = '';
+            spinner.stop();
+            info('/n');
+            spinner.text = `ComputeCluster error: ${err.message}`;
+            spinner.fail();
+            reject(err);
+          } else if (response.error) {
+            spinner.text = '';
+            spinner.stop();
+            info('\n');
+            spinner.text = `error occured while minifying ${response.error.assetName}`;
+            spinner.fail();
+            error(`line: ${response.error.line}, col: ${response.error.col} ${response.error.message} \n`);
+            reject(response.error);
+          }
+          resolve();
+        });
+      });
+    });
+
     spinner.start();
   }
 

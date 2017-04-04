@@ -5,7 +5,9 @@ export default function pack(program) {
     .description('打包代码')
     .option('-m, --min', '压缩混淆代码')
     .action((options) => {
-      let project = projectService.getProject(process.cwd(), false);
+      let cwd = process.cwd();
+      let project = projectService.getProject(cwd, false);
+      options.cwd = cwd;
       project.pack(options);
     });
 };

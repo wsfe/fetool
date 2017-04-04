@@ -1,7 +1,9 @@
 import path from 'path';
 import fs from 'fs';
-import {parser, uglify} from 'uglify-js';
+import uglifyJS from 'uglify-js';
 import uglifycss from 'uglifycss';
+
+import crypto from './crypto';
 
 process.on('message', (message) => {
   let cwd = message.cwd,
@@ -15,8 +17,13 @@ process.on('message', (message) => {
 
     if (extname === '.js'){
       try {
-        let ast = parser.parse(content);
-        minifiedCode = uglify.gen_code(ast);
+        let minifyResult = uglifyJS.minify(content, {
+          compress: {
+            dead_code: true
+          },
+          fromString: true
+        });
+        minifiedCode = minifyResult.code;
       } catch(e) {
         response.error = Object.assign(e, {assetName: assetName});
       }
@@ -28,4 +35,6 @@ process.on('message', (message) => {
       fs.writeFileSync(path.resolve(cwd, assetName), minifiedCode, {encoding: 'utf8'});
     }
   }
+
+  process.send(response);
 });

@@ -22,8 +22,8 @@ class Config {
         },
         dev: {
           path: './dev/',
-          filename: '[noextname][ext]',
-          chunkFilename: '[id].chunk.js',
+          filename: '[noextname]@dev[ext]',
+          chunkFilename: '[id].chunk@dev.js',
           publicPath: '//' + path.join('img.chinanetcenter.com', 'projectDir', 'dev/')
         },
         prd: {
