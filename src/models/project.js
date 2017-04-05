@@ -1,14 +1,12 @@
 import webpack from 'webpack';
 import _ from 'lodash';
-import os from 'os';
 import ComputeCluster from 'compute-cluster';
+import shell from 'shelljs';
 import SingleConfig from './single.config';
 import MutliConfig from './mutli.config';
 import progressPlugin from '../plugins/progress';
 import cssIgnoreJSPlugin from '../plugins/cssIgnoreJS';
 import utils from '../utils';
-
-const numCPUs = os.cpus().length;
 
 class Project {
   constructor(cwd) {
@@ -76,9 +74,10 @@ class Project {
       promise = this._getPackPromise([cssConfig, jsConfig], options);
     }
     promise.then((statsArr) => {
-      statsArr.forEach((stats) => {
-        this._logPack(stats);
-      });
+      this.afterPack(statsArr);
+      // statsArr.forEach((stats) => {
+      //   this._logPack(stats);
+      // });
       let packDuration = Date.now() - startTime > 1000
         ? Math.floor((Date.now() - startTime) / 1000) + 's'
         : Date.now() - startTime + 'ms';
@@ -88,6 +87,12 @@ class Project {
       if (reason.details) {
         error(reason.details);
       }
+    });
+  }
+
+  afterPack(statsArr) {
+    statsArr.forEach((stats) => {
+      this._logPack(stats);
     });
   }
 
@@ -132,7 +137,7 @@ class Project {
             return;
           }
           if (options.min) {
-            this._min(stats, options.cwd).then(() => {
+            this._min(stats, config.output.path).then(() => {
               resolve(stats);
             });
           } else {
@@ -148,9 +153,8 @@ class Project {
 
   _min(stats, cwd) {
     let cc = new ComputeCluster({
-      module: sysPath.resolve(__dirname, '../utils.uglifyWorker.js'),
-      max_backlog: -1,
-      max_processes: numCPUs
+      module: sysPath.resolve(__dirname, '../utils/uglifyWorker.js'),
+      max_backlog: -1
     });
     let resolve;
     let promise = new Promise((res, rej) => {
@@ -191,7 +195,13 @@ class Project {
     return promise;
   }
 
-  build(options) { }
+  build(options) {
+    let child = shell.exec('fet pack -m');
+    if (child.code !== 0) {
+      error('Building encounted error while executing: fet pack -m');
+      process.exit(1);
+    }
+  }
 
 }
 
