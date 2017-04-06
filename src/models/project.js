@@ -2,11 +2,14 @@ import webpack from 'webpack';
 import _ from 'lodash';
 import ComputeCluster from 'compute-cluster';
 import shell from 'shelljs';
+import mkdirp from 'mkdirp';
 import SingleConfig from './single.config';
 import MutliConfig from './mutli.config';
 import progressPlugin from '../plugins/progress';
 import cssIgnoreJSPlugin from '../plugins/cssIgnoreJS';
 import utils from '../utils';
+
+const FILE_NAME_REG = /^([^\@]*)\@?([^\.]+)(\.(js|css))$/;
 
 class Project {
   constructor(cwd) {
@@ -74,10 +77,7 @@ class Project {
       promise = this._getPackPromise([cssConfig, jsConfig], options);
     }
     promise.then((statsArr) => {
-      this.afterPack(statsArr);
-      // statsArr.forEach((stats) => {
-      //   this._logPack(stats);
-      // });
+      this.afterPack(statsArr, options);
       let packDuration = Date.now() - startTime > 1000
         ? Math.floor((Date.now() - startTime) / 1000) + 's'
         : Date.now() - startTime + 'ms';
@@ -90,10 +90,36 @@ class Project {
     });
   }
 
-  afterPack(statsArr) {
+  afterPack(statsArr, options) {
     statsArr.forEach((stats) => {
       this._logPack(stats);
     });
+    if (options.min) {
+      this._generateVersion(statsArr);
+    }
+  }
+
+  _generateVersion(statsArr) {
+    let verPath = sysPath.join(this.cwd, 'ver');
+    if (fs.existsSync(verPath)) {
+      shell.rm('-rf', verPath);
+    }
+    mkdirp.sync(verPath);
+
+    let versions = [];
+    statsArr.forEach(stats => {
+      let info = stats.toJson({ errorDetails: false });
+      info.assets.map(asset => {
+        let name = asset.name;
+        if (/\.js$/.test(name) || /\.css$/.test(name)) {
+          let matchInfo = name.match(FILE_NAME_REG),
+          filePath = matchInfo[1] + matchInfo[3],
+          version = matchInfo[2];
+          versions.push(filePath + '#' + version);
+        }
+      });
+    });
+    fs.writeFileSync(sysPath.join(verPath, 'versions.mapping'), versions.join('\n'), 'UTF-8');
   }
 
   _logPack(stats) {
