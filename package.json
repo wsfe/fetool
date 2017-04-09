@@ -5,7 +5,9 @@
     "fet": "bin/fet"
   },
   "scripts": {
-    "dev": "gulp"
+    "dev": "gulp watch",
+    "build": "gulp",
+    "postinstall": ""
   },
   "dependencies": {
     "chalk": "^1.1.3",

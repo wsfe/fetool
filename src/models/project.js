@@ -16,6 +16,7 @@ class Project {
     this.cwd = cwd;
     this.configFile = sysPath.resolve(this.cwd, 'ft.config');
     let userConfig = this.getUserConfig(this.configFile);
+    this.userConfig = userConfig;
     this.mode = userConfig.mode || MUTLI_MODE;
     if (this.mode === SINGLE_MODE) {
       this.config = new SingleConfig(cwd, userConfig);

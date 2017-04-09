@@ -9,6 +9,9 @@ global.sysPath = require('path');
 global.SINGLE_MODE = 'single';
 global.MUTLI_MODE = 'mutli';
 
+global.USER_HOME = process.env[process.platform == 'win32' ? 'USERPROFILE' : 'HOME'];
+global.FET_RC = sysPath.join(USER_HOME, '.fetrc');
+
 global.info = console.info;
 
 global.spinner = ora();

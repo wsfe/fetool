@@ -12,6 +12,20 @@
 ```
 {
   mode: 'multi',  // 默认是多页面的应用，单页应用选择填写single。
+  sync: {
+    dev1: {
+      host: 10.8.203.61,
+      port: 63501,
+      path: '/usr/local/src',
+      sudo: false
+    },
+    dev2: {
+      host: 10.8.203.61,
+      port: 63501,
+      path: '/usr/local/src',
+      sudo: false
+    }
+  }
   entryExtNames: {
     css: ['.css', '.scss', '.sass', '.less'],
     js: ['.js', '.jsx', '.vue']
