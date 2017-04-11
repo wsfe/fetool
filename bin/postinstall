@@ -1,7 +1,8 @@
 var fs = require('fs');
+var path = require('path');
 
 var USER_HOME = process.env[process.platform == 'win32' ? 'USERPROFILE' : 'HOME'];
-var FET_RC = sysPath.join(USER_HOME, '.fetrc');
+var FET_RC = path.join(USER_HOME, '.fetrc');
 
 var isExit = true;
 try {
@@ -11,6 +12,6 @@ try {
 }
 
 if (!isExit) {
-  let initRC = {};
-  fs.writeFileSync(FET_RC, JSON.stringify(initRc, null, '    '), 'UTF-8');
+  var initRC = {};
+  fs.writeFileSync(FET_RC, JSON.stringify(initRC, null, '    '), 'UTF-8');
 }

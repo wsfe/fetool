@@ -16,6 +16,7 @@
     dev1: {
       host: 10.8.203.61,
       port: 63501,
+      local: './', // 默认当前目录
       path: '/usr/local/src',
       sudo: false
     },
