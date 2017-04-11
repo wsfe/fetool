@@ -27,6 +27,7 @@
     "morgan": "^1.8.1",
     "node-sass": "^4.5.0",
     "ora": "^1.1.0",
+    "right-pad": "^1.0.1",
     "sass-loader": "^6.0.3",
     "serve-favicon": "^2.4.1",
     "shelljs": "^0.7.7",
