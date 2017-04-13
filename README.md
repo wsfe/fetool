@@ -12,6 +12,17 @@
 ```
 {
   mode: 'multi',  // 默认是多页面的应用，单页应用选择填写single。
+  lint: { // 基于standard的
+    path: 'src/js', // 选择需要校验的文件路径，默认是src
+    opts: {
+      ignore: [],   // glob 形式的排除列表 (一般无须配置)
+      fix: false,   // 是否自动修复问题
+      globals: [],  // 声明需要跳过检测的定义全局变量
+      plugins: [],  // eslint 插件列表
+      envs: [],     // eslint 环境
+      parser: ''    // js 解析器（例如 babel-eslint）
+    }
+  },
   sync: {
     dev1: {
       host: 10.8.203.61,

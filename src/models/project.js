@@ -53,6 +53,8 @@ class Project {
   }
 
   pack(options) {
+    spinner.text ='start pack';
+    spinner.start();
     let startTime = Date.now();
     let promise = null;
     if (this.mode === SINGLE_MODE) {
@@ -159,7 +161,10 @@ class Project {
     configs.forEach((config) => {
       let promise = new Promise((resolve, reject) => {
         webpack(config, (err, stats) => {
+          spinner.text = 'end pack';
           if (err) {
+            spinner.text = '';
+            spinner.stop();
             reject(err);
             return;
           }
@@ -168,6 +173,8 @@ class Project {
               resolve(stats);
             });
           } else {
+            spinner.text = '';
+            spinner.stop();
             resolve(stats);
           }
         });
@@ -179,6 +186,8 @@ class Project {
   }
 
   _min(stats, cwd) {
+    spinner.text = 'start min';
+    
     let cc = new ComputeCluster({
       module: sysPath.resolve(__dirname, '../utils/uglifyWorker.js'),
       max_backlog: -1
@@ -216,9 +225,7 @@ class Project {
         }
       });
     });
-
-    spinner.start();
-
+    
     return promise;
   }
 

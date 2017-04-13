@@ -14,7 +14,7 @@ global.FET_RC = sysPath.join(USER_HOME, '.fetrc');
 
 global.info = console.info;
 
-global.spinner = ora();
+global.spinner = ora().start();
 
 global.success = function() {
   info(chalk.green(' √ ' + [].slice.call(arguments).join(' ')));
