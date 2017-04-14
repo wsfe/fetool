@@ -69,8 +69,9 @@ export default function lint(program) {
     .description('检测代码')
     .action(() => {
       let project = projectService.getProject(process.cwd(), false);
-      let opts = project.userConfig.lint || {};
-      opts.cwd = sysPath.join(process.cwd(), opts.cwd ? opts.cwd : 'src');
+      let lintConfig = project.userConfig.lint || {};
+      let opts = lintConfig.opts || {};
+      opts.cwd = sysPath.join(process.cwd(), lintConfig.cwd ? lintConfig.cwd : 'src');
       spinner.text = 'start lint';
       standard.lintFiles([], opts, (err, results) => {
         spinner.stop();
@@ -78,7 +79,12 @@ export default function lint(program) {
           error(err);
           return;
         }
-        console.log(processResults(results.results));
+        let parseResult = processResults(results.results);
+        if (parseResult) {
+          console.log();
+        } else {
+          success('lint success');
+        }
       });
     });
 }

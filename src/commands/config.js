@@ -14,6 +14,7 @@ export default function config(program) {
       if (key && value) { // 设置全局变量
         globalConfig[key] = value;
         fs.writeFileSync(FET_RC, JSON.stringify(globalConfig, null, '    '), 'UTF-8');
+        success('set ', key, ':', value, ' success');
       } else { // 提示命令错误
         error('fet config [key] [value]\n');
       }

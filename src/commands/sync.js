@@ -8,7 +8,7 @@ export default function sync(program) {
     .action((env) => {
       let project = projectService.getProject(process.cwd(), false);
       let syncInstance = new Sync(project);
-      syncInstance.sync(options.env);
+      syncInstance.sync(env);
     });
 };
 
@@ -65,6 +65,7 @@ class Sync {
       }
       if (stdout) {
         log(stdout);
+        process.exit();
       }
     });
   }

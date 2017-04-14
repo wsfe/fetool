@@ -1,11 +1,20 @@
 #ft
 
-## 备注
-1. 目前有两种模式，多页面和单页面模式。单页面模式只会导出一份样式表。多页面模式提倡，样式表独立出来，然后js里面的样式不被提取出来。
+## ft2.0设计核心说明
+目前ft2.0支持两种模式：多页面和单页面模式。单页面模式只会导出一份样式表。多页面模式提倡，样式表独立出来，然后js里面的样式不被提取出来。大家可以根据自己的需要来选择想要的模式。
 
-## 解决方案
-1. 如果是要导出统一的样式，那么项目中的exports中，不应该有以样式后缀为结尾的文件，统一由webpack插件生成。不过这会产生一个问题，就是：在有很多文件的时候，出现，server只能有一个web-dev-middleware，这个时候每次请求，webpack都会为每个entry进行编译，速度会比较慢。这种是比较适用于entry比较少的情况。
-2. 如果是根据不同的页面，产生不同的样式。这样是没有什么限制的。
+## 安装
+npm 安装方式安装
+```
+npm i -g fet
+```
+yarn 方式安装
+```
+yarn global add fet
+```
+
+## 命令行说明
+请安装fet之后，在命令行运行`fet`查看命令说明，如果对某个命令感兴趣请运行`fet commandName -h`查看。
 
 ## config demo
 
@@ -13,7 +22,7 @@
 {
   mode: 'multi',  // 默认是多页面的应用，单页应用选择填写single。
   lint: { // 基于standard的
-    path: 'src/js', // 选择需要校验的文件路径，默认是src
+    cwd: 'src/js', // 选择需要校验的文件路径，默认是src
     opts: {
       ignore: [],   // glob 形式的排除列表 (一般无须配置)
       fix: false,   // 是否自动修复问题
@@ -23,7 +32,7 @@
       parser: ''    // js 解析器（例如 babel-eslint）
     }
   },
-  sync: {
+  sync: { // 配置同步到哪台机器
     dev1: {
       host: 10.8.203.61,
       port: 63501,
@@ -38,24 +47,21 @@
       sudo: false
     }
   }
-  entryExtNames: {
+  entryExtNames: { // 告诉ft2.0哪些后缀是属于js或者css，ft才能根据这些来选择编译配置
     css: ['.css', '.scss', '.sass', '.less'],
     js: ['.js', '.jsx', '.vue']
   },
   config: {
-    exports: [
+    exports: [ // 要编译压缩的文件
       "js/module/home/index.js",
       "css/index.css",
       "css/base.css",
       "css/module/index.less"
     ],
-    webpackConfig: function(config) {
+    webpackConfig: function(jsConfig, cssConfig) {
       // do what you want todo
-      return config;
-    },
-    cssWebpackConfig: function(config) {
-      // do what you want todo
-      return config;
+      // 当对样式没有特殊配置时，可以直接返回jsConfig就行，否则就要两者都返回。
+      return jsConfig; // return {jsConfig: jsConfig, cssConfig: cssConfig};
     }
   }
 }
