@@ -6,11 +6,11 @@
 ## 安装
 npm 安装方式安装
 ```
-npm i -g fet
+npm i -g fetool
 ```
 yarn 方式安装
 ```
-yarn global add fet
+yarn global add fetool
 ```
 
 ## 命令行说明
