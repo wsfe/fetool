@@ -1,4 +1,4 @@
-#ft
+# ft
 
 ## ft2.0设计核心说明
 目前ft2.0支持两种模式：多页面和单页面模式。单页面模式只会导出一份样式表。多页面模式提倡，样式表独立出来，然后js里面的样式不被提取出来。大家可以根据自己的需要来选择想要的模式。
@@ -6,11 +6,11 @@
 ## 安装
 npm 安装方式安装
 ```
-npm i -g fetool
+npm i -g fet-cli
 ```
 yarn 方式安装
 ```
-yarn global add fetool
+yarn global add fet-cli
 ```
 
 ## 命令行说明

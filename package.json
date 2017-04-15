@@ -1,5 +1,5 @@
 {
-  "name": "fetool",
+  "name": "fet-cli",
   "version": "0.0.1",
   "preferGlobal": true,
   "description": "基于webpack提供了调试，压缩，编译，检查，同步能功能的前端开发工具",
