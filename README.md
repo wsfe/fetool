@@ -1,4 +1,4 @@
-# ft
+#ft
 
 ## ft2.0设计核心说明
 目前ft2.0支持两种模式：多页面和单页面模式。单页面模式只会导出一份样式表。多页面模式提倡，样式表独立出来，然后js里面的样式不被提取出来。大家可以根据自己的需要来选择想要的模式。
@@ -6,11 +6,11 @@
 ## 安装
 npm 安装方式安装
 ```
-npm i -g fet-cli
+npm i -g fetool
 ```
 yarn 方式安装
 ```
-yarn global add fet-cli
+yarn global add fetool
 ```
 
 ## 命令行说明
@@ -58,7 +58,8 @@ yarn global add fet-cli
       "css/base.css",
       "css/module/index.less"
     ],
-    webpackConfig: function(jsConfig, cssConfig) {
+    webpackConfig: function(jsConfig, cssConfig, node_env) {
+    // webpackConfig: function(config, node_env) { // 根据不同的模式，有不同的选择，单页模式，没有cssConfig
       // do what you want todo
       // 当对样式没有特殊配置时，可以直接返回jsConfig就行，否则就要两者都返回。
       return jsConfig; // return {jsConfig: jsConfig, cssConfig: cssConfig};

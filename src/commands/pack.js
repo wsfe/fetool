@@ -6,7 +6,7 @@ export default function pack(program) {
     .option('-m, --min', '压缩混淆代码')
     .action((options) => {
       let cwd = process.cwd();
-      let project = projectService.getProject(cwd, false);
+      let project = projectService.getProject(cwd, ENV.PRD, false);
       options.cwd = cwd;
       project.pack(options);
     });

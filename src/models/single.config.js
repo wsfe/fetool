@@ -4,8 +4,8 @@ import _ from 'lodash';
 import ExtractTextPlugin from 'extract-text-webpack-plugin';
 
 class SingleConfig extends Config {
-  constructor(cwd, userConfig) {
-    super(cwd, userConfig);
+  constructor(project) {
+    super(project);
     this.setDefaultModuleRules();
     this.setWebpackConfig(this.extendConfig.webpackConfig);
   }
@@ -36,7 +36,7 @@ class SingleConfig extends Config {
     if (typeof webpackConfig === 'object') {
       webpackMerge(this.baseConfig, webpackConfig);
     } else if (typeof webpackConfig === 'function') {
-      this.baseConfig = webpackConfig(this.baseConfig);
+      this.baseConfig = webpackConfig.call(this, this.baseConfig, this.NODE_ENV);
     } else {
       console.error('webpackConfig 设置错误');
       return;

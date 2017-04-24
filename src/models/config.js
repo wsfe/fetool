@@ -3,13 +3,16 @@ import ExtTemplatePath from '../plugins/extTemplatePath';
 import ExtractTextPlugin from 'extract-text-webpack-plugin';
 
 class Config {
-  constructor(cwd, userConfig) {
-    this.cwd = cwd;
-    this.userConfig = userConfig;
+  constructor(project) {
+    this.cwd = project.cwd;
+    this.userConfig = project.userConfig;
+    this.NODE_ENV = project.NODE_ENV;
+    this.project = project;
     this.entryExtNames = {
       css: ['.css', '.scss', '.sass', '.less'],
       js: ['.js', '.jsx', '.vue']
     };
+    let projectName = process.platform === 'win32' ? cwd.split('\\').pop(): cwd.split('/').pop();
     this.baseConfig = {
       context: sysPath.join(cwd, 'src'),
       entry: {},
@@ -18,19 +21,19 @@ class Config {
           path: './prd/',
           filename: '[noextname][ext]',
           chunkFilename: '[id].chunk.js',
-          publicPath: '//' + sysPath.join('img.chinanetcenter.com', 'projectDir', 'prd/')
+          publicPath: '//' + sysPath.join('img.chinanetcenter.com', projectName, 'prd/')
         },
         dev: {
           path: './dev/',
           filename: '[noextname]@dev[ext]',
           chunkFilename: '[id].chunk@dev.js',
-          publicPath: '//' + sysPath.join('img.chinanetcenter.com', 'projectDir', 'dev/')
+          publicPath: '//' + sysPath.join('img.chinanetcenter.com', projectName, 'dev/')
         },
         prd: {
           path: './prd/',
           filename: '[noextname]@[chunkhash][ext]',
           chunkFilename: '[id].chunk.min.js',
-          publicPath: '//' + sysPath.join('img.chinanetcenter.com', 'projectDir', 'prd/')
+          publicPath: '//' + sysPath.join('img.chinanetcenter.com', projectName, 'prd/')
         }
       },
       module: {

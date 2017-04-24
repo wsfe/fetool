@@ -3,8 +3,8 @@ import ExtractTextPlugin from 'extract-text-webpack-plugin';
 import _ from 'lodash';
 
 class MutliConfig extends Config {
-  constructor(cwd, userConfig) {
-    super(cwd, userConfig);
+  constructor(project) {
+    super(project);
     this.cssConfig = _.cloneDeep(this.baseConfig);
     this.jsConfig = _.cloneDeep(this.baseConfig);
     this.setDefaultModuleRules();
@@ -60,7 +60,7 @@ class MutliConfig extends Config {
 
   setWebpackConfig(webpackConfig = {}) {
     if (typeof webpackConfig === 'function') {
-      let result = webpackConfig(this.jsConfig, this.cssConfig);
+      let result = webpackConfig.call(this, this.jsConfig, this.cssConfig, this.NODE_ENV);
       if (result.jsConfig) {
         this.jsConfig = result.jsConfig;
       } else {

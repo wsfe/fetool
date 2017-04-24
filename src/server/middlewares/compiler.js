@@ -7,13 +7,13 @@ const QUERY_REG = /\?.+$/;
 const VER_REG = /@[\d\w]+(?=\.\w+)/;
 let middlewareCache = {};
 let watchCache = {};
-let verbose = false;
+let verbose = false; // 显示编译的详细信息
 
 function watchConfig(projectName, configFilePath, projectCwd) {
   if (!watchCache[projectName]) {
     let watcher = chokidar.watch(configFilePath);
     watcher.on('change', () => {
-      projectService.getProject(projectCwd, false);
+      projectService.getProject(projectCwd, ENV.DEV, false);
     });
     watchCache[projectName] = watcher;
   }

@@ -6,7 +6,7 @@ export default function sync(program) {
   program.command('sync [env]') // 同步到名字为env的开发环境
     .description('同步到开发机')
     .action((env) => {
-      let project = projectService.getProject(process.cwd(), false);
+      let project = projectService.getProject(process.cwd(), ENV.DEV, false);
       let syncInstance = new Sync(project);
       syncInstance.sync(env);
     });

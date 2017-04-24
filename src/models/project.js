@@ -12,16 +12,22 @@ import utils from '../utils';
 const FILE_NAME_REG = /^([^\@]*)\@?([^\.]+)(\.(js|css))$/;
 
 class Project {
-  constructor(cwd) {
+  /**
+   * Project 构造函数
+   * @param {当前的工作目录} cwd 
+   * @param {运行环境，'development或者production'} env 
+   */
+  constructor(cwd, env) {
     this.cwd = cwd;
+    this.NODE_ENV = env;
     this.configFile = sysPath.resolve(this.cwd, 'ft.config');
     let userConfig = this.getUserConfig(this.configFile);
     this.userConfig = userConfig;
     this.mode = userConfig.mode || MUTLI_MODE;
     if (this.mode === SINGLE_MODE) {
-      this.config = new SingleConfig(cwd, userConfig);
+      this.config = new SingleConfig(this);
     } else if (this.mode === MUTLI_MODE) {
-      this.config = new MutliConfig(cwd, userConfig);
+      this.config = new MutliConfig(this);
     }
   }
 

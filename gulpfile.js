@@ -4,8 +4,8 @@ const babel = require('gulp-babel');
 const watch = require('gulp-watch');
 
 // gulp.task('default', ['clearLib', 'compileJS', 'moveConfig']);
-gulp.task('default', ['clearLib', 'compileJS']);
-gulp.task('watch', ['clearLib', 'watchJS']);
+gulp.task('default', ['clearLib', 'compileJS', 'moveConfig']);
+gulp.task('watch', ['clearLib', 'watchJS', 'moveConfig']);
 
 gulp.task('clearLib', [], function () {
   return fs.removeSync('./lib/')
@@ -30,11 +30,7 @@ gulp.task('compileJS', [], function () {
     .pipe(gulp.dest('lib'));
 });
 
-// gulp.task('moveConfig', [], function() {
-//     return watch(['src/config/**/*.*', 'src/config/**/.*'], {
-//         verbose: true,
-//         ignoreInitial: false
-//     }, () => {
-//         gulp.src(['src/config/**/*.*', 'src/config/**/.*'], {base: 'src/'}).pipe(gulp.dest('lib'));
-//     })
-// });
+gulp.task('moveConfig', [], function() {
+  return gulp.src('src/config/**/*.*', {base: 'src/'})
+    .pipe(gulp.dest('lib'));
+});
