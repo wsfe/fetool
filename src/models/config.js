@@ -4,7 +4,8 @@ import ExtractTextPlugin from 'extract-text-webpack-plugin';
 
 class Config {
   constructor(project) {
-    this.cwd = project.cwd;
+    let cwd = project.cwd;
+    this.cwd = cwd;
     this.userConfig = project.userConfig;
     this.NODE_ENV = project.NODE_ENV;
     this.project = project;
@@ -48,7 +49,7 @@ class Config {
       },
       plugins: [],
       resolve: {
-        extensions: ['*', '.js', '.css', '.scss', '.json', '.string', '.tpl'],
+        extensions: ['*', '.js', '.css', '.scss', '.json', '.string', '.tpl', '.vue'],
         alias: {}
       },
       devtool: 'cheap-source-map'
@@ -71,7 +72,9 @@ class Config {
       return this;
     }
     this.setExports(this.extendConfig.exports);
-    this.config = _.cloneDeep(this.baseConfig);
+    this.fixContext(this.baseConfig);
+    this.fixOutput(this.baseConfig);
+    // this.config = _.cloneDeep(this.baseConfig);
   }
 
   setEntryExtNames(entryExtNames) {
@@ -151,7 +154,9 @@ class Config {
     if (config.resolve.alias) {
       let alias = config.resolve.alias;
       Object.keys(alias).forEach((name) => {
-        alias[name] = sysPath.join(this.cwd, alias[name]);
+        if (/^\/.+/.test(alias[name])) {
+          alias[name] = sysPath.join(this.cwd, alias[name]);
+        }
       });
     }
   }

@@ -67,3 +67,6 @@ yarn global add fetool
   }
 }
 ```
+
+## todo list
+1. 将压缩代码那部分的线程模块由`compute-cluster`改成`[Hamsters.js](http://www.hamsters.io/)`

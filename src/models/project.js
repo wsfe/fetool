@@ -40,7 +40,7 @@ class Project {
    * 
    * @param {cb: funtion, type: 'base|js|css'} cb，主要是对config进行再加工，type：主要是指定哪一种配置，分为三种，baseConfig,jsConfig,cssConfig
    */
-  getServerCompiler({ cb, type }) {
+  getServerCompiler({ cb, type } = {}) {
     let config = {};
     if (this.mode === SINGLE_MODE) {
       config = this.getConfig('local');
@@ -170,7 +170,7 @@ class Project {
       let promise = new Promise((resolve, reject) => {
         webpack(config, (err, stats) => {
           cfl--;
-          if (clf === 0) {
+          if (cfl === 0) {
             spinner.text = 'end pack';
             spinner.text = '';
             spinner.stop(); 
@@ -239,16 +239,16 @@ class Project {
   }
 
   build(options) {
-    this.pack({
-      min: true
-    });
+    // this.pack({
+    //   min: true
+    // });
     /**在vs code调试的时候需要用这种方式，否则会报错，在命令行下面不用用下面的方式，否则会有很多没法实现 */
-    // let child = shell.exec('fet pack -m');
-    // if (child.code !== 0) {
-    //   error('Building encounted error while executing: fet pack -m');
-    //   shell.exit(1);
-    // }
-    // process.exit();
+    let child = shell.exec('fet pack -m');
+    if (child.code !== 0) {
+      error('Building encounted error while executing: fet pack -m');
+      shell.exit(1);
+    }
+    process.exit();
   }
 
 }

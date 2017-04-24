@@ -7,7 +7,7 @@ let projectCache = {
 
 export function getProject(cwd, env, cache) {
   if (!projectCache[env][cwd] || !cache) {
-    projectCache[cwd] = new Project(cwd, env);
+    projectCache[env][cwd] = new Project(cwd, env);
   }
-  return projectCache[cwd];
+  return projectCache[env][cwd];
 };
