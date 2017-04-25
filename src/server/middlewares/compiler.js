@@ -5,6 +5,7 @@ import _ from 'lodash';
 
 const QUERY_REG = /\?.+$/;
 const VER_REG = /@[\d\w]+(?=\.\w+)/;
+let webpackMiddleCache = {};
 let middlewareCache = {};
 let watchCache = {};
 let verbose = false; // 显示编译的详细信息
@@ -79,54 +80,55 @@ function getMiddleWare(compiler) {
  * @param {project名字} projectName 
  */
 function singleMode(project, projectName) {
-  return (req, res, next) => {
-    if (middlewareCache[projectName]) {
-      middlewareCache[projectName](req, res, next);
-      return;
-    }
-    let compiler = project.getServerCompiler();
-    let middleware = getMiddleWare(compiler);
-    middlewareCache[projectName] = middleware;
-    middleware(req, res, next);
-  };
+  if (!middlewareCache[projectName]) {
+    middlewareCache[projectName] = (req, res, next) => {
+      if (webpackMiddleCache[projectName]) {
+        webpackMiddleCache[projectName](req, res, next);
+        return;
+      }
+      let compiler = project.getServerCompiler();
+      let middleware = getMiddleWare(compiler);
+      webpackMiddleCache[projectName] = middleware;
+      middleware(req, res, next);
+    };
+  }
+  return middlewareCache[projectName];
 }
 
 /**
  * 
  * @param {Project对象} project 
  * @param {project名字} projectName 
- * @param {请求的url地址，有经过处理了} url 
  */
-function multiMode(project, projectName, url, filePaths) {
-  url = '/' + filePaths.slice(3).join('/').replace(QUERY_REG, '').replace(VER_REG, '');
-  return (req, res, next) => {
-    req.url = url;
-    let requestUrl = url.replace('.map', '').slice(1);
-    let cacheId = sysPath.join(projectName, requestUrl);
+function multiMode(project, projectName, requestUrl, cacheId) {
+  if (!middlewareCache[cacheId]) {
+    middlewareCache[cacheId] = (req, res, next) => {
 
-    if (middlewareCache[cacheId]) {
-      middlewareCache[cacheId](req, res, next);
-      return;
-    }
-
-    let newConfig;
-    let compiler = project.getServerCompiler({
-      type: sysPath.extname(requestUrl).substr(1),
-      cb: (config) => {
-        newConfig = getMulitModeConfig(config, requestUrl);
-        return newConfig ? newConfig : config;
+      if (webpackMiddleCache[cacheId]) {
+        webpackMiddleCache[cacheId](req, res, next);
+        return;
       }
-    });
-    if (!newConfig) {
-      res.statusCode = 404;
-      res.end('[ft] - 资源入口未找到，请检查项目' + projectName + '的配置文件.');
-      return;
-    }
 
-    let middleware = getMiddleWare(compiler);
-    middlewareCache[cacheId] = middleware;
-    middleware(req, res, next);
-  };
+      let newConfig;
+      let compiler = project.getServerCompiler({
+        type: sysPath.extname(requestUrl).substr(1),
+        cb: (config) => {
+          newConfig = getMulitModeConfig(config, requestUrl);
+          return newConfig ? newConfig : config;
+        }
+      });
+      if (!newConfig) {
+        res.statusCode = 404;
+        res.end('[ft] - 资源入口未找到，请检查项目' + projectName + '的配置文件.');
+        return;
+      }
+
+      let middleware = getMiddleWare(compiler);
+      webpackMiddleCache[cacheId] = middleware;
+      middleware(req, res, next);
+    };
+  }
+  return middlewareCache[cacheId];
 }
 
 export default function (options) {
@@ -142,17 +144,21 @@ export default function (options) {
 
     // 非output.path下的资源不做任何处理
     if (filePaths[2] !== sysPath.relative(projectCwd, outputDir)) { // 不知道为毛之前可以用relative这个函数，现在就不行了
-    // if (filePaths[2] !== outputDir.replace(/\W*(\w+)\W*/g, ($0, $1) => { return $1; })) { // 暂时这么解决
+      // if (filePaths[2] !== outputDir.replace(/\W*(\w+)\W*/g, ($0, $1) => { return $1; })) { // 暂时这么解决
       next();
       return;
     }
 
     if (project.mode === SINGLE_MODE) {
+      req.url = '/' + filePaths.slice(3).join('/').replace(QUERY_REG, '').replace(VER_REG, '');
       singleMode(project, projectName)(req, res, next);
     }
 
     if (project.mode === MUTLI_MODE) {
-      multiMode(project, projectName, url, filePaths)(req, res, next);
+      req.url = '/' + filePaths.slice(3).join('/').replace(QUERY_REG, '').replace(VER_REG, '');
+      let requestUrl = req.url.replace('.map', '').slice(1);
+      let cacheId = sysPath.join(projectName, requestUrl);
+      multiMode(project, projectName, requestUrl, cacheId)(req, res, next);
     }
 
     watchConfig(projectName, project.configFile, projectCwd);
