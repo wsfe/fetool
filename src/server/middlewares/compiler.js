@@ -14,7 +14,12 @@ function watchConfig(projectName, configFilePath, projectCwd) {
   if (!watchCache[projectName]) {
     let watcher = chokidar.watch(configFilePath);
     watcher.on('change', () => {
-      projectService.getProject(projectCwd, ENV.DEV, false);
+      Object.keys(middlewareCache).forEach(function (key) {
+        if (projectName === key || key.indexOf(projectName) ===0 && /[\/\\]/.test(key.substr(projectName.length, 1))) {
+          delete middlewareCache[key];
+          delete webpackMiddleCache[key];
+        }
+      });
     });
     watchCache[projectName] = watcher;
   }
@@ -161,7 +166,7 @@ export default function (options) {
       multiMode(project, projectName, requestUrl, cacheId)(req, res, next);
     }
 
-    watchConfig(projectName, project.configFile, projectCwd);
+    watchConfig(projectName, project.configFile + '.js', projectCwd);
 
   };
 };
