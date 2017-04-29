@@ -31,6 +31,6 @@ gulp.task('compileJS', [], function () {
 });
 
 gulp.task('moveConfig', [], function() {
-  return gulp.src('src/config/**/*.*', {base: 'src/'})
+  return gulp.src(['src/config/**/*.*', 'src/config/**/.*'], {base: 'src/'})
     .pipe(gulp.dest('lib'));
 });
