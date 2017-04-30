@@ -154,8 +154,8 @@ class Config {
     if (config.resolve.alias) {
       let alias = config.resolve.alias;
       Object.keys(alias).forEach((name) => {
-        if (/^\/.+/.test(alias[name])) {
-          alias[name] = sysPath.join(this.cwd, alias[name]);
+        if (!/^\w+.+/.test(alias[name])) { // 如果不是已相对路径或者绝对路径为开头的（一般就是查找安装的包，例如vue,lodash等）
+          alias[name] = sysPath.resolve(this.cwd, alias[name]);          
         }
       });
     }

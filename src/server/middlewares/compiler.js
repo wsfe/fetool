@@ -18,6 +18,7 @@ function watchConfig(projectName, configFilePath, projectCwd) {
         if (projectName === key || key.indexOf(projectName) ===0 && /[\/\\]/.test(key.substr(projectName.length, 1))) {
           delete middlewareCache[key];
           delete webpackMiddleCache[key];
+          projectService.deleteProject(projectCwd, ENV.DEV);
         }
       });
     });

@@ -11,3 +11,7 @@ export function getProject(cwd, env, cache) {
   }
   return projectCache[env][cwd];
 };
+
+export function deleteProject(cwd, env) {
+  delete projectCache[env][cwd];
+}
