@@ -22,19 +22,22 @@ class Config {
           path: './prd/',
           filename: '[noextname][ext]',
           chunkFilename: '[id].chunk.js',
-          publicPath: '//' + sysPath.join('img.chinanetcenter.com', projectName, 'prd/')
+          // publicPath: '//' + sysPath.join('img.chinanetcenter.com', projectName, 'prd/')
+          publicPath: '/' + sysPath.join(projectName, 'prd/')
         },
         dev: {
           path: './dev/',
           filename: '[noextname]@dev[ext]',
           chunkFilename: '[id].chunk@dev.js',
-          publicPath: '//' + sysPath.join('img.chinanetcenter.com', projectName, 'dev/')
+          // publicPath: '//' + sysPath.join('img.chinanetcenter.com', projectName, 'dev/')
+          publicPath: '/' + sysPath.join(projectName, 'dev/')
         },
         prd: {
           path: './prd/',
           filename: '[noextname]@[chunkhash][ext]',
           chunkFilename: '[id].chunk.min.js',
-          publicPath: '//' + sysPath.join('img.chinanetcenter.com', projectName, 'prd/')
+          // publicPath: '//' + sysPath.join('img.chinanetcenter.com', projectName, 'prd/')
+          publicPath: '/' + sysPath.join(projectName, 'prd/')          
         }
       },
       module: {
