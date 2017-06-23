@@ -61,28 +61,23 @@ class Project {
   pack(options) {
     spinner.text ='start pack';
     spinner.start();
-    let startTime = Date.now();
+    let startTime = Date.now(); // 编译开始时间
+    let outputPath;
     let promise = null;
-    if (this.mode === SINGLE_MODE) {
+    if (this.mode === SINGLE_MODE) { // 如果是单页模式
       let config = this.getConfig(options.min ? 'prd' : 'dev');
+      outputPath = config.output.path;
       this._setPackConfig(config, options);
-      try {
-        utils.fs.deleteFolderRecursive(config.output.path);
-      } catch (e) {
-        error(e);
-      }
+      utils.fs.deleteFolderRecursive(outputPath);
       promise = this._getPackPromise([config], options);
-    } else {
+    } else { // 如果是多页模式
       let cssConfig = this.getConfig(options.min ? 'prd' : 'dev', 'css'),
         jsConfig = this.getConfig(options.min ? 'prd' : 'dev', 'js');
+      outputPath = cssConfig.output.path;
       cssConfig.plugins.push(new cssIgnoreJSPlugin());
       this._setPackConfig(cssConfig, options);
       this._setPackConfig(jsConfig, options);
-      try {
-        utils.fs.deleteFolderRecursive(cssConfig.output.path);
-      } catch (e) {
-        error(e);
-      }
+      utils.fs.deleteFolderRecursive(outputPath); // cssConfig和jsConfig的out.path是一样的，所以只需要删除一次就行。
       promise = this._getPackPromise([cssConfig, jsConfig], options);
     }
     promise.then((statsArr) => {
@@ -97,6 +92,10 @@ class Project {
         error(reason.details);
       }
     });
+
+    if (options.compile === 'html') {
+      this._compileHtml(outputPath);
+    }
   }
 
   afterPack(statsArr, options) {
@@ -238,17 +237,28 @@ class Project {
     return promise;
   }
 
+  /**
+   * 用来编译自定义的html
+   * @param {输出路径} outputPath 
+   */
+  _compileHtml(outputPath) {
+    
+  }
+
   build(options) {
-    // this.pack({
-    //   min: true
-    // });
-    /**在vs code调试的时候需要用这种方式，否则会报错，在命令行下面不用用下面的方式，否则会有很多没法实现 */
-    let child = shell.exec('fet pack -m');
-    if (child.code !== 0) {
-      error('Building encounted error while executing: fet pack -m');
-      shell.exit(1);
+    if (process.env.DEBUG) {
+      /**在vs code调试的时候需要用这种方式，否则会报错。在命令行时不用用下面的方式，否则会有很多没法实现 */
+      let child = shell.exec('fet pack -m');
+      if (child.code !== 0) {
+        error('Building encounted error while executing: fet pack -m');
+        shell.exit(1);
+      }
+      process.exit();
+    } else {
+      this.pack({
+        min: true
+      });
     }
-    process.exit();
   }
 
 }
