@@ -1,6 +1,5 @@
 import url from 'url';
 import path from 'path';
-import fs from 'fs';
 
 /**
  * 处理include标签，将include的内容替换成真实内容

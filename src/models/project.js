@@ -93,7 +93,7 @@ class Project {
       }
     });
 
-    if (options.compile === 'html') {
+    if (options.compile === 'html') { // 如果需要编译html
       this._compileHtml(outputPath);
     }
   }
@@ -194,6 +194,11 @@ class Project {
     return Promise.all(promises);
   }
 
+  /**
+   * 压缩编译之后的代码代码
+   * @param {编译之后的数据} stats 
+   * @param {文件路径} cwd 
+   */
   _min(stats, cwd) {
     
     let cc = new ComputeCluster({
@@ -242,7 +247,23 @@ class Project {
    * @param {输出路径} outputPath 
    */
   _compileHtml(outputPath) {
-    
+    let dist = sysPath.join(outputPath, 'html');
+    fs.copy(sysPath.join(this.cwd, 'src/html'), dist, err => {
+      if (err) {
+        error('compile html failed:');
+        error(err);
+      } else {
+        fs.readdir(dist, (err, files) => {
+          if (err) {
+            error('compile html failed:');
+            error(err);
+          } else {
+            console.log(files);
+            success('compile html success');
+          }
+        });
+      }
+    });
   }
 
   build(options) {
@@ -252,8 +273,9 @@ class Project {
       if (child.code !== 0) {
         error('Building encounted error while executing: fet pack -m');
         shell.exit(1);
+      } else {
+        process.exit();
       }
-      process.exit();
     } else {
       this.pack({
         min: true

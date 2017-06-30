@@ -3,7 +3,7 @@ import ora from 'ora';
 import logSymbols from 'log-symbols';
 import moment from 'moment';
 
-global.fs = require('fs');
+global.fs = require('fs-extra');
 global.sysPath = require('path');
 
 global.SINGLE_MODE = 'single';
