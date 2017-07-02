@@ -3,6 +3,7 @@ import _ from 'lodash';
 import ComputeCluster from 'compute-cluster';
 import shell from 'shelljs';
 import mkdirp from 'mkdirp';
+import url from 'url';
 import SingleConfig from './single.config';
 import MutliConfig from './mutli.config';
 import progressPlugin from '../plugins/progress';
@@ -10,6 +11,7 @@ import cssIgnoreJSPlugin from '../plugins/cssIgnoreJS';
 import utils from '../utils';
 
 const FILE_NAME_REG = /^([^\@]*)\@?([^\.]+)(\.(js|css))$/;
+const INCLUDE_REG = /<include\s+(.*\s)?src\s*=\s*"(\S+)".*><\/include>/g
 
 class Project {
   /**
@@ -59,7 +61,7 @@ class Project {
   }
 
   pack(options) {
-    spinner.text ='start pack';
+    spinner.text = 'start pack';
     spinner.start();
     let startTime = Date.now(); // 编译开始时间
     let outputPath;
@@ -68,7 +70,8 @@ class Project {
       let config = this.getConfig(options.min ? 'prd' : 'dev');
       outputPath = config.output.path;
       this._setPackConfig(config, options);
-      utils.fs.deleteFolderRecursive(outputPath);
+      fs.removeSync(outputPath);
+      // utils.fs.deleteFolderRecursive(outputPath);
       promise = this._getPackPromise([config], options);
     } else { // 如果是多页模式
       let cssConfig = this.getConfig(options.min ? 'prd' : 'dev', 'css'),
@@ -77,7 +80,8 @@ class Project {
       cssConfig.plugins.push(new cssIgnoreJSPlugin());
       this._setPackConfig(cssConfig, options);
       this._setPackConfig(jsConfig, options);
-      utils.fs.deleteFolderRecursive(outputPath); // cssConfig和jsConfig的out.path是一样的，所以只需要删除一次就行。
+      fs.removeSync(outputPath); // cssConfig和jsConfig的out.path是一样的，所以只需要删除一次就行。
+      // utils.fs.deleteFolderRecursive(outputPath); // cssConfig和jsConfig的out.path是一样的，所以只需要删除一次就行。
       promise = this._getPackPromise([cssConfig, jsConfig], options);
     }
     promise.then((statsArr) => {
@@ -121,8 +125,8 @@ class Project {
         let name = asset.name;
         if (/\.js$/.test(name) || /\.css$/.test(name)) {
           let matchInfo = name.match(FILE_NAME_REG),
-          filePath = matchInfo[1] + matchInfo[3],
-          version = matchInfo[2];
+            filePath = matchInfo[1] + matchInfo[3],
+            version = matchInfo[2];
           versions.push(filePath + '#' + version);
         }
       });
@@ -172,7 +176,7 @@ class Project {
           if (cfl === 0) {
             spinner.text = 'end pack';
             spinner.text = '';
-            spinner.stop(); 
+            spinner.stop();
           }
           if (err) {
             reject(err);
@@ -200,7 +204,7 @@ class Project {
    * @param {文件路径} cwd 
    */
   _min(stats, cwd) {
-    
+
     let cc = new ComputeCluster({
       module: sysPath.resolve(__dirname, '../utils/uglifyWorker.js'),
       max_backlog: -1
@@ -238,7 +242,7 @@ class Project {
         }
       });
     });
-    
+
     return promise;
   }
 
@@ -253,13 +257,15 @@ class Project {
         error('compile html failed:');
         error(err);
       } else {
-        fs.readdir(dist, (err, files) => {
-          if (err) {
-            error('compile html failed:');
-            error(err);
-          } else {
-            console.log(files);
-            success('compile html success');
+        utils.fs.readFileRecursiveSync(dist, ['html', 'htm'], (filePath, content) => {
+          content = content.toString();
+          let contentChange = false; // 默认内容没有更改
+          content = content.replace(INCLUDE_REG, ($0, $1, $2, $3) => {
+            contentChange = true;
+            return fs.readFileSync(url.resolve(filePath, $2), 'utf8');
+          });
+          if (contentChange) { // 如果内容更改了，那么就重写如文件里面
+            fs.writeFileSync(filePath, content);
           }
         });
       }

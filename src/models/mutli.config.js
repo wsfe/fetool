@@ -82,6 +82,11 @@ class MutliConfig extends Config {
     this.fixOutput(this.cssConfig);
   }
 
+  /**
+   * 
+   * @param {配置文件} config 
+   * @description 补充那些没有添加上去的插件，有可能jsconfig可以不需要，不过这里都添加上去了，之后如果出现bug，就需要处理。
+   */
   fixPlugins(config) {
     let isExitExtractTextPlugin = config.plugins.some((plugin) => {
       return plugin instanceof ExtractTextPlugin;
