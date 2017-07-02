@@ -268,6 +268,7 @@ class Project {
             fs.writeFileSync(filePath, content);
           }
         });
+        success('compile html success!');
       }
     });
   }
