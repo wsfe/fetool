@@ -3,8 +3,8 @@ import _ from 'lodash';
 import shell from 'shelljs';
 
 export default function sync(program) {
-  program.command('sync [env]') // 同步到名字为env的开发环境
-    .description('同步到开发机')
+  program.command('sync <env>') // 同步到名字为env的开发环境
+    .description('同步到<env>机器')
     .action((env) => {
       let project = projectService.getProject(process.cwd(), ENV.DEV, false);
       let syncInstance = new Sync(project);
@@ -19,16 +19,13 @@ class Sync {
 
   sync(env) {
     let globalConfig = JSON.parse(fs.readFileSync(FET_RC, { encoding: 'utf8' }));
-    let syncConf = this.project.userConfig.sync,
+    let syncConf = this.project.userConfig.servers,
       conf = {};
-    if (syncConf[env]) {
-      conf = syncConf[env];
-    } else {
-      for (let key in syncConf) {
-        conf = syncConf[key];
-        break;
-      }
+    if (!syncConf[env]) {
+      error(`请查看配置文档，配置${env}服务器!`);
+      process.exit(1);
     }
+    conf = syncConf[env];
     conf.user = globalConfig.user? `${globalConfig.user}@`: '';
     conf.local = conf.local || './';
 

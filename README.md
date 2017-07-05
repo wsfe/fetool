@@ -32,16 +32,18 @@ yarn global add fetool
       parser: ''    // js 解析器（例如 babel-eslint）
     }
   },
-  sync: { // 配置同步到哪台机器
+  servers: { // 配置同步到哪台机器
     dev1: {
       host: 10.8.203.61,
+      domain: '//dev1.wangsu.com',
       port: 63501,
       local: './', // 默认当前目录
       path: '/usr/local/src',
       sudo: false
     },
     dev2: {
-      host: 10.8.203.61,
+      host: 10.8.203.190,
+      domain: '//beta1.wangsu.com',
       port: 63501,
       path: '/usr/local/src',
       sudo: false
@@ -70,3 +72,5 @@ yarn global add fetool
 
 ## todo list
 1. 将压缩代码那部分的线程模块由`compute-cluster`改成`[Hamsters.js](http://www.hamsters.io/)`
+2. 抽离出publicPath的域名，单独成为一个可配置变量
+3. 修复重复打包问题，提取出公共包

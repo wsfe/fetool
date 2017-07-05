@@ -70,8 +70,8 @@ class Project {
       let config = this.getConfig(options.min ? 'prd' : 'dev');
       outputPath = config.output.path;
       this._setPackConfig(config, options);
+      this._setPublicPath(config, options.env);
       fs.removeSync(outputPath);
-      // utils.fs.deleteFolderRecursive(outputPath);
       promise = this._getPackPromise([config], options);
     } else { // 如果是多页模式
       let cssConfig = this.getConfig(options.min ? 'prd' : 'dev', 'css'),
@@ -80,8 +80,9 @@ class Project {
       cssConfig.plugins.push(new cssIgnoreJSPlugin());
       this._setPackConfig(cssConfig, options);
       this._setPackConfig(jsConfig, options);
+      this._setPublicPath(cssConfig, options.env);
+      this._setPublicPath(jsConfig, options.env);
       fs.removeSync(outputPath); // cssConfig和jsConfig的out.path是一样的，所以只需要删除一次就行。
-      // utils.fs.deleteFolderRecursive(outputPath); // cssConfig和jsConfig的out.path是一样的，所以只需要删除一次就行。
       promise = this._getPackPromise([cssConfig, jsConfig], options);
     }
     promise.then((statsArr) => {
@@ -90,11 +91,13 @@ class Project {
         ? Math.floor((Date.now() - startTime) / 1000) + 's'
         : Date.now() - startTime + 'ms';
       log('Packing Finished in ' + packDuration + '.\n');
+      process.exit(); // 由于编译html比编译js快，所以可以再这边退出进程。
     }).catch((reason) => {
       error(reason.stack || reason);
       if (reason.details) {
         error(reason.details);
       }
+      process.exit();
     });
 
     if (options.compile === 'html') { // 如果需要编译html
@@ -164,6 +167,11 @@ class Project {
     //   config.devtool = '';
     // }
     config.plugins.push(progressPlugin);
+  }
+
+  _setPublicPath(config, env) {
+    let domain = env? `${this.userConfig.servers[env]['domain']}$`: '//img.chinanetcenter.com';
+    config.output.publicPath = `${domain}${config.output.publicPath}`;
   }
 
   _getPackPromise(configs, options) {
