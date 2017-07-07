@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import ExtTemplatePath from '../plugins/extTemplatePath';
 import ExtractTextPlugin from 'extract-text-webpack-plugin';
+import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 
 class Config {
   constructor(project) {
@@ -50,7 +51,7 @@ class Config {
           use: ['html-loader']
         }]
       },
-      plugins: [],
+      plugins: [new BundleAnalyzerPlugin()],
       resolve: {
         extensions: ['*', '.js', '.css', '.scss', '.json', '.string', '.tpl', '.vue'],
         alias: {}
