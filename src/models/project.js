@@ -7,6 +7,7 @@ import url from 'url';
 import SingleConfig from './single.config';
 import MutliConfig from './mutli.config';
 import progressPlugin from '../plugins/progress';
+import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import cssIgnoreJSPlugin from '../plugins/cssIgnoreJS';
 import utils from '../utils';
 
@@ -167,6 +168,7 @@ class Project {
     //   config.devtool = '';
     // }
     config.plugins.push(progressPlugin);
+    config.plugins.push(new BundleAnalyzerPlugin());
   }
 
   _setPublicPath(config, env) {
