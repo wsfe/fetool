@@ -1,6 +1,7 @@
 import Project from '../models/project';
 
 let projectCache = {
+  [ENV.LOC]: {},
   [ENV.DEV]: {},
   [ENV.PRD]: {}
 };

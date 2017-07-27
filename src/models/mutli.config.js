@@ -60,7 +60,7 @@ class MutliConfig extends Config {
 
   setWebpackConfig(webpackConfig = {}) {
     if (typeof webpackConfig === 'function') {
-      let result = webpackConfig.call(this, this.jsConfig, this.cssConfig, this.NODE_ENV);
+      let result = webpackConfig.call(this, this.jsConfig, this.cssConfig, {env: NODE_ENV, plugins: { ExtractTextPlugin }});
       if (result.jsConfig) {
         this.jsConfig = result.jsConfig;
       } else {

@@ -36,7 +36,7 @@ class SingleConfig extends Config {
     if (typeof webpackConfig === 'object') {
       webpackMerge(this.baseConfig, webpackConfig);
     } else if (typeof webpackConfig === 'function') {
-      this.baseConfig = webpackConfig.call(this, this.baseConfig, this.NODE_ENV);
+      this.baseConfig = webpackConfig.call(this, this.baseConfig, {env: this.NODE_ENV, plugins: {ExtractTextPlugin}}, this);
     } else {
       console.error('webpackConfig 设置错误');
       return;
@@ -48,11 +48,19 @@ class SingleConfig extends Config {
   }
 
   fixPlugins() {
-    let isExitExtractTextPlugin = this.baseConfig.plugins.some((plugin) => {
+    let isExitExtractTextPlugin = this.baseConfig.plugins.some((plugin) => { // 判断是否是整个项目共用一个ExtractTextPlugin
       return plugin instanceof ExtractTextPlugin;
     });
     if (!isExitExtractTextPlugin) {
-      this.baseConfig.plugins.push(new ExtractTextPlugin('style.css'))
+      let filename = 'base@[chunkhash].css';
+      if (this.NODE_ENV === ENV.LOC) {
+        filename = 'base.css';
+      } else if (this.NODE_ENV === ENV.DEV){
+        filename = 'base@dev.css';
+      }
+      this.baseConfig.plugins.push(new ExtractTextPlugin({
+        filename
+      }));
     }
   }
 }

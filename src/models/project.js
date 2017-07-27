@@ -178,12 +178,12 @@ class Project {
 
   _getPackPromise(configs, options) {
     let promises = [];
-    let cfl = configs.length;
+    let configsLen = configs.length;
     configs.forEach((config) => {
       let promise = new Promise((resolve, reject) => {
         webpack(config, (err, stats) => {
-          cfl--;
-          if (cfl === 0) {
+          configsLen--;
+          if (configsLen === 0) {
             spinner.text = 'end pack';
             spinner.text = '';
             spinner.stop();
@@ -284,20 +284,9 @@ class Project {
   }
 
   build(options) {
-    if (process.env.DEBUG) {
-      /**在vs code调试的时候需要用这种方式，否则会报错。在命令行时不用用下面的方式，否则会有很多没法实现 */
-      let child = shell.exec('fet pack -m');
-      if (child.code !== 0) {
-        error('Building encounted error while executing: fet pack -m');
-        shell.exit(1);
-      } else {
-        process.exit();
-      }
-    } else {
-      this.pack({
-        min: true
-      });
-    }
+    this.pack({
+      min: true
+    });
   }
 
 }

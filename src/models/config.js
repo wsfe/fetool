@@ -1,6 +1,5 @@
 import _ from 'lodash';
 import ExtTemplatePath from '../plugins/extTemplatePath';
-import ExtractTextPlugin from 'extract-text-webpack-plugin';
 
 class Config {
   constructor(project) {
@@ -35,7 +34,7 @@ class Config {
         prd: {
           path: './prd/',
           filename: '[noextname]@[chunkhash][ext]',
-          chunkFilename: '[id].chunk.min.js',
+          chunkFilename: '[id].chunk@[chunkhash].js',
           // publicPath: '//' + sysPath.join('img.chinanetcenter.com', projectName, 'prd/')
           publicPath: `/${projectName}/prd/`        
         }

@@ -18,7 +18,7 @@ function watchConfig(projectName, configFilePath, projectCwd) {
         if (projectName === key || key.indexOf(projectName) ===0 && /[\/\\]/.test(key.substr(projectName.length, 1))) {
           delete middlewareCache[key];
           delete webpackMiddleCache[key];
-          projectService.deleteProject(projectCwd, ENV.DEV);
+          projectService.deleteProject(projectCwd, ENV.LOC);
         }
       });
     });
@@ -144,7 +144,7 @@ export default function (options) {
       filePaths = url.split('/'),
       projectName = filePaths[1], // 项目名称
       projectCwd = sysPath.join(process.cwd(), projectName), // 项目的绝对路径
-      project = projectService.getProject(projectCwd, ENV.DEV, true),
+      project = projectService.getProject(projectCwd, ENV.LOC, true),
       baseConfig = project.getConfig('local', 'base'),
       outputDir = baseConfig.output.path || 'prd';
 

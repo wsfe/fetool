@@ -38,7 +38,7 @@ yarn global add fetool
       domain: '//dev1.wangsu.com',
       port: 63501,
       local: './', // 默认当前目录
-      path: '/usr/local/src',
+      path: '/usr/local/src', //服务器端要存放的地址
       sudo: false
     },
     dev2: {
@@ -48,7 +48,7 @@ yarn global add fetool
       path: '/usr/local/src',
       sudo: false
     }
-  }
+  },
   entryExtNames: { // 告诉ft2.0哪些后缀是属于js或者css，ft才能根据这些来选择编译配置
     css: ['.css', '.scss', '.sass', '.less'],
     js: ['.js', '.jsx', '.vue']

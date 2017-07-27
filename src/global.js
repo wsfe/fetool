@@ -9,8 +9,9 @@ global.sysPath = require('path');
 global.SINGLE_MODE = 'single';
 global.MUTLI_MODE = 'mutli';
 global.ENV = {
-  DEV: 'development',
-  PRD: 'production'
+  LOC: 'location', // 本地
+  DEV: 'development', // 开发dev的时候
+  PRD: 'production' // 线上
 }
 
 global.USER_HOME = process.env[process.platform == 'win32' ? 'USERPROFILE' : 'HOME'];
