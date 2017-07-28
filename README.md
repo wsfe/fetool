@@ -6,11 +6,11 @@
 ## 安装
 npm 安装方式安装
 ```
-npm i -g fetool
+npm i -g fet-cli
 ```
 yarn 方式安装
 ```
-yarn global add fetool
+yarn global add fet-cli
 ```
 
 ## 命令行说明
@@ -60,8 +60,8 @@ yarn global add fetool
       "css/base.css",
       "css/module/index.less"
     ],
-    webpackConfig: function(jsConfig, cssConfig, node_env) {
-    // webpackConfig: function(config, node_env) { // 根据不同的模式，有不同的选择，单页模式，没有cssConfig
+    webpackConfig: function(jsConfig, cssConfig, options, context) {
+    // webpackConfig: function(config, options, context) { // 根据不同的模式，有不同的选择，单页模式，没有cssConfig
       // do what you want todo
       // 当对样式没有特殊配置时，可以直接返回jsConfig就行，否则就要两者都返回。
       return jsConfig; // return {jsConfig: jsConfig, cssConfig: cssConfig};
@@ -71,6 +71,7 @@ yarn global add fetool
 ```
 
 ## todo list
-1. 将压缩代码那部分的线程模块由`compute-cluster`改成`[Hamsters.js](http://www.hamsters.io/)`
-2. 抽离出publicPath的域名，单独成为一个可配置变量
-3. 修复重复打包问题，提取出公共包
+<!-- 1. 将压缩代码那部分的线程模块由`compute-cluster`改成`[Hamsters.js](http://www.hamsters.io/)` -->
+1. 将自己编写的多线程压缩改成官方新提供的工具[uglifyjs-webpack-plugin](https://github.com/webpack-contrib/uglifyjs-webpack-plugin)
+2. 修复重复打包问题，提取出公共包
+3. 将webpack升级到最新版

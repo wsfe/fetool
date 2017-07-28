@@ -168,7 +168,9 @@ class Project {
     //   config.devtool = '';
     // }
     config.plugins.push(progressPlugin);
-    config.plugins.push(new BundleAnalyzerPlugin());
+    if (options.analyze) { // 是否启用分析
+      config.plugins.push(new BundleAnalyzerPlugin());
+    }
   }
 
   _setPublicPath(config, env) {
@@ -284,9 +286,9 @@ class Project {
   }
 
   build(options) {
-    this.pack({
+    this.pack(Object.assign({
       min: true
-    });
+    }, options || {}));
   }
 
 }
