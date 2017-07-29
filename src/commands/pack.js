@@ -8,7 +8,7 @@ export default function pack(program) {
     .option('-c, --compile [value]', '编译处理') // 编译处理一些比较特殊的文件，例如自定义的html文件
     .action((options) => {
       let cwd = process.cwd();
-      let project = projectService.getProject(cwd, ENV.PRD, false);
+      let project = projectService.getProject(cwd, ENV.DEV, false);
       if (options.env && !project.userConfig.servers[options.env]) {
         error(options.env, '环境不存在，请选择正确的发布环境');
         process.exit(1);
