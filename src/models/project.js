@@ -92,7 +92,9 @@ class Project {
         ? Math.floor((Date.now() - startTime) / 1000) + 's'
         : Date.now() - startTime + 'ms';
       log('Packing Finished in ' + packDuration + '.\n');
-      process.exit(); // 由于编译html比编译js快，所以可以再这边退出进程。
+      if (!options.analyze) { // 如果需要分析数据，就不要退出进程
+        process.exit(); // 由于编译html比编译js快，所以可以再这边退出进程。
+      }
     }).catch((reason) => {
       error(reason.stack || reason);
       if (reason.details) {
@@ -174,7 +176,7 @@ class Project {
   }
 
   _setPublicPath(config, env) {
-    let domain = env? `${this.userConfig.servers[env]['domain']}$`: '//img.chinanetcenter.com';
+    let domain = env? `${this.userConfig.servers[env]['domain']}`: '//img.chinanetcenter.com';
     config.output.publicPath = `${domain}${config.output.publicPath}`;
   }
 

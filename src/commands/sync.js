@@ -29,7 +29,7 @@ class Sync {
     conf.user = globalConfig.user? `${globalConfig.user}@`: '';
     conf.local = conf.local || './';
 
-    let default_exclude = ['.idea', '.svn', '.git', '.DS_Store', 'node_modules', 'prd', 'loc', 'env', 'dll'];
+    let default_exclude = ['.idea', '.svn', '.git', '.gitignore', 'yarn.lock', 'ft.config.js', '.DS_Store', 'node_modules', 'src', 'loc', 'env', 'dll'];
     if (conf['exclude'] && conf['exclude'].length > 0) {
       default_exclude = default_exclude.concat(conf.exclude);
       default_exclude = _.uniq(default_exclude);
