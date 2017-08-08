@@ -10,9 +10,9 @@ let middlewareCache = {};
 let watchCache = {};
 let verbose = false; // 显示编译的详细信息
 
-function watchConfig(projectName, configFilePath, projectCwd) {
+function watchConfig(projectName, paths, projectCwd) {
   if (!watchCache[projectName]) {
-    let watcher = chokidar.watch(configFilePath);
+    let watcher = chokidar.watch(paths);
     watcher.on('change', () => {
       Object.keys(middlewareCache).forEach(function (key) {
         if (projectName === key || key.indexOf(projectName) ===0 && /[\/\\]/.test(key.substr(projectName.length, 1))) {
@@ -167,7 +167,7 @@ export default function (options) {
       multiMode(project, projectName, requestUrl, cacheId)(req, res, next);
     }
 
-    watchConfig(projectName, project.configFile + '.js', projectCwd);
+    watchConfig(projectName, [sysPath.join(projectCwd, 'build'), project.configFile + '.js'], projectCwd); // 默认监听根目录下的build文件夹的所有文件改变
 
   };
 };
