@@ -170,6 +170,7 @@ class Project {
     //   config.devtool = '';
     // }
     config.plugins.push(progressPlugin);
+    config.plugins.push(new webpack.optimize.ModuleConcatenationPlugin());
     if (options.analyze) { // 是否启用分析
       config.plugins.push(new BundleAnalyzerPlugin());
     }
