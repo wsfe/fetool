@@ -137,6 +137,15 @@ function multiMode(project, projectName, requestUrl, cacheId) {
   return middlewareCache[cacheId];
 }
 
+function getWatchPaths(paths, projectCwd) {
+  let result = [];
+  paths = paths.split(',');
+  paths.forEach(value => {
+    result.push(sysPath.join(projectCwd, value));
+  });
+  return result;
+}
+
 export default function (options) {
   verbose = options.verbose;
   return function (req, res, next) {
@@ -167,7 +176,10 @@ export default function (options) {
       multiMode(project, projectName, requestUrl, cacheId)(req, res, next);
     }
 
-    watchConfig(projectName, [sysPath.join(projectCwd, 'build'), project.configFile + '.js'], projectCwd); // 默认监听根目录下的build文件夹的所有文件改变
+    let watchPaths = getWatchPaths(options.watch, projectCwd);
+    watchPaths.push(project.configFile + '.js')
+
+    watchConfig(projectName, watchPaths, projectCwd); // 默认监听根目录下的build文件夹的所有文件改变
 
   };
 };
