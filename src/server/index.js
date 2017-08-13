@@ -23,8 +23,8 @@ class Server {
       let globalConfig = JSON.parse(fs.readFileSync(FET_RC, { encoding: 'utf8' }));
       if (!globalConfig['https-key'] || !globalConfig['https-crt']) {
         warn('缺少 https 证书/秘钥配置，将使用默认，或执行以下命令设置:');
-        !globalConfig['https-key'] && warn('ykit config set https-key <path-to-your-key>');
-        !globalConfig['https-crt'] && warn('ykit config set https-crt <path-to-your-crt>');
+        !globalConfig['https-key'] && warn('fet config https-key <path-to-your-key>');
+        !globalConfig['https-crt'] && warn('fet config https-crt <path-to-your-crt>');
       }
       let defaultHttpsConfigPath = sysPath.join(__dirname, '../config');
 

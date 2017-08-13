@@ -177,7 +177,15 @@ class Project {
   }
 
   _setPublicPath(config, env) {
-    let domain = env? `${this.userConfig.servers[env]['domain']}`: '//img.chinanetcenter.com';
+    let domain = '//img.chinanetcenter.com';
+    if (env) { // 如果指定了环境
+      domain = `${this.userConfig.servers[env]['domain']}`;
+    } else { // 如果没有指定环境
+      let globalConfig = JSON.parse(fs.readFileSync(FET_RC, { encoding: 'utf8' }));
+      if (globalConfig.domain) { // 如果有设置全局的默认域名
+        domain = globalConfig.domain;
+      }
+    }
     config.output.publicPath = `${domain}${config.output.publicPath}`;
   }
 
