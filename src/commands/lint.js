@@ -77,7 +77,7 @@ export default function lint(program) {
         spinner.stop();
         if (err) {
           error(err);
-          return;
+          process.exit(1);
         }
         let parseResult = processResults(results.results);
         if (parseResult) {
@@ -85,6 +85,7 @@ export default function lint(program) {
         } else {
           success('lint success');
         }
+        process.exit();
       });
     });
 }
