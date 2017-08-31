@@ -16,16 +16,15 @@ process.on('message', (message) => {
     let minifiedCode = null;
 
     if (extname === '.js'){
-      try {
-        let minifyResult = uglifyJS.minify(content, {
-          compress: {
-            dead_code: true
-          },
-          fromString: true
-        });
-        minifiedCode = minifyResult.code;
-      } catch(e) {
+      let minifyResult = uglifyJS.minify(content, {
+        compress: {
+          dead_code: true
+        }
+      });
+      if (minifyResult.error) {
         response.error = Object.assign(e, {assetName: assetName});
+      } else {
+        minifiedCode = minifyResult.code;
       }
     } else if (extname === '.css') {
       minifiedCode = uglifycss.processString(content);
