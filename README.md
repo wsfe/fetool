@@ -115,4 +115,4 @@ yarn global add fet-cli
 <!-- 1. 将压缩代码那部分的线程模块由`compute-cluster`改成`[Hamsters.js](http://www.hamsters.io/)` -->
 1. 将自己编写的多线程压缩改成官方新提供的工具[uglifyjs-webpack-plugin](https://github.com/webpack-contrib/uglifyjs-webpack-plugin)
 2. 修复重复打包问题，提取出公共包
-3. 完善`init`命令
+3. 完善`init`命令(当前命令还不太完善，请先不使用)
