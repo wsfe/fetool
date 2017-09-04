@@ -76,15 +76,19 @@ class Project {
       promise = this._getPackPromise([config], options);
     } else { // 如果是多页模式
       let cssConfig = this.getConfig(options.min ? 'prd' : 'dev', 'css'),
-        jsConfig = this.getConfig(options.min ? 'prd' : 'dev', 'js');
-      outputPath = cssConfig.output.path;
-      cssConfig.plugins.push(new cssIgnoreJSPlugin());
-      this._setPackConfig(cssConfig, options);
+        jsConfig = this.getConfig(options.min ? 'prd' : 'dev', 'js'),
+        configs = [jsConfig]; // 默认会有js配置
+      outputPath = jsConfig.output.path;
+      if (!_.isEmpty(cssConfig.entry)) {
+        cssConfig.plugins.push(new cssIgnoreJSPlugin());
+        this._setPackConfig(cssConfig, options);
+        this._setPublicPath(cssConfig, options.env);
+        configs.push(cssConfig);
+      }
       this._setPackConfig(jsConfig, options);
-      this._setPublicPath(cssConfig, options.env);
       this._setPublicPath(jsConfig, options.env);
       fs.removeSync(outputPath); // cssConfig和jsConfig的out.path是一样的，所以只需要删除一次就行。
-      promise = this._getPackPromise([cssConfig, jsConfig], options);
+      promise = this._getPackPromise(configs, options);
     }
     promise.then((statsArr) => {
       this.afterPack(statsArr, options);
