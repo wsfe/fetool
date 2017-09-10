@@ -4,9 +4,11 @@ import ComputeCluster from 'compute-cluster';
 import shell from 'shelljs';
 import mkdirp from 'mkdirp';
 import url from 'url';
+import UglifyJSPlugin from 'uglifyjs-webpack-plugin';
 import SingleConfig from './single.config';
 import MutliConfig from './mutli.config';
 import progressPlugin from '../plugins/progress';
+import UglifyCSSPlugin from '../plugins/uglifycss';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import cssIgnoreJSPlugin from '../plugins/cssIgnoreJS';
 import utils from '../utils';
@@ -116,9 +118,6 @@ class Project {
     statsArr.forEach((stats) => {
       this._logPack(stats);
     });
-    if (options.min) {
-      this._generateVersion(statsArr);
-    }
   }
 
   _generateVersion(statsArr) {
@@ -175,6 +174,10 @@ class Project {
     // }
     config.plugins.push(progressPlugin);
     config.plugins.push(new webpack.optimize.ModuleConcatenationPlugin());
+    if (options.min) {
+      config.plugins.push(new UglifyJSPlugin());
+      config.plugins.push(new UglifyCSSPlugin());
+    }
     if (options.analyze) { // 是否启用分析
       config.plugins.push(new BundleAnalyzerPlugin());
     }
@@ -209,14 +212,7 @@ class Project {
             reject(err);
             return;
           }
-          if (options.min) {
-            spinner.start();
-            this._min(stats, config.output.path).then(() => {
-              resolve(stats);
-            });
-          } else {
-            resolve(stats);
-          }
+          resolve(stats);
         });
       });
 
