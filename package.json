@@ -10,10 +10,10 @@
     "postinstall": "node ./bin/postinstall"
   },
   "dependencies": {
+    "@types/webpack-sources": "^0.1.3",
     "chalk": "^2.0.1",
     "chokidar": "^1.7.0",
     "commander": "^2.11.0",
-    "compute-cluster": "^0.0.9",
     "css-loader": "^0.28.4",
     "express": "^4.15.3",
     "extract-text-webpack-plugin": "^3.0.0",
