@@ -9,17 +9,6 @@ export default class Version {
   }
 
   apply(compiler) {
-    // compiler.plugin('compilation', (compilation) => {
-    //   compilation.plugin('chunk-asset', (chunk, filename) => {
-    //     if (/\.js$/.test(filename) || /\.css$/.test(filename)) {
-    //       let matchInfo = filename.match(FILE_NAME_REG),
-    //         filePath = matchInfo[1] + matchInfo[3],
-    //         version = matchInfo[2];
-    //         console.log(filePath)
-    //       this.versions.push(filePath + '#' + version);
-    //     }
-    //   })
-    // })
     compiler.plugin('after-emit', (compilation, callback) => {
       compilation.chunks.forEach(chunk => {
         let fileParse = sysPath.parse(chunk.name),

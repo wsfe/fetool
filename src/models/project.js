@@ -5,12 +5,15 @@ import mkdirp from 'mkdirp';
 import UglifyJSPlugin from 'uglifyjs-webpack-plugin';
 import SingleConfig from './single.config';
 import MutliConfig from './mutli.config';
-import progressPlugin from '../plugins/progress';
-import UglifyCSSPlugin from '../plugins/uglifycss';
-import HtmlCompilerPlugin from '../plugins/htmlCompiler';
-import VersionPlugin from '../plugins/version';
+import {
+  progressPlugin,
+  UglifyCSSPlugin,
+  HtmlCompilerPlugin,
+  VersionPlugin,
+  cssIgnoreJSPlugin,
+  CompilerLoggerPlugin
+} from '../plugins';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
-import cssIgnoreJSPlugin from '../plugins/cssIgnoreJS';
 
 class Project {
   /**
@@ -92,7 +95,6 @@ class Project {
     }
     this._clearVersion();
     promise.then((statsArr) => {
-      this.afterPack(statsArr, options);
       let packDuration = Date.now() - startTime > 1000
         ? Math.floor((Date.now() - startTime) / 1000) + 's'
         : Date.now() - startTime + 'ms';
@@ -109,12 +111,6 @@ class Project {
     });
   }
 
-  afterPack(statsArr, options) {
-    statsArr.forEach((stats) => {
-      this._logPack(stats);
-    });
-  }
-
   /**
    * 清理版本号文件夹
    */
@@ -126,30 +122,6 @@ class Project {
     mkdirp.sync(verPath);
   }
 
-  _logPack(stats) {
-    let info = stats.toJson({ errorDetails: false });
-
-    if (stats.hasErrors()) {
-      info.errors.map((err) => {
-        error(err + '\n');
-      });
-    }
-
-    if (stats.hasWarnings()) {
-      info.warnings.map((warning) => {
-        warn(warning + '\n');
-      });
-    }
-
-    info.assets.map(asset => {
-      let fileSize = asset.size;
-      fileSize = fileSize > 1024
-        ? (fileSize / 1024).toFixed(2) + ' KB'
-        : fileSize + ' Bytes';
-      log(`- ${asset.name} - ${fileSize}`);
-    });
-  }
-
   _setPackConfig(config, options) {
     config.devtool = '';
     // if (options.min) {
@@ -157,6 +129,7 @@ class Project {
     // }
     config.plugins.push(progressPlugin);
     config.plugins.push(new webpack.optimize.ModuleConcatenationPlugin());
+    config.plugins.push(new CompilerLoggerPlugin());
     if (options.min) {
       config.plugins.push(new UglifyJSPlugin());
       config.plugins.push(new UglifyCSSPlugin());
