@@ -23,7 +23,7 @@ export default class Version {
       })
       fs.appendFile(sysPath.join(this.verFilePath, 'versions.mapping'), this.versions.join('\n') + '\n', (err) => {
         if (err) {
-          callback(err)
+          compilation.errors.push(err)
         }
         callback()
       })

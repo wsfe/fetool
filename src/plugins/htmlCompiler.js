@@ -31,10 +31,10 @@ export default class HtmlCompiler {
               }
             });
             success('compile html success!');
-            callback()
           } catch(err) {
-            callback(err)
+            compilation.errors.push(err)
           }
+          callback()
         }
       });
     })

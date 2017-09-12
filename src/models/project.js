@@ -131,7 +131,9 @@ class Project {
     config.plugins.push(new webpack.optimize.ModuleConcatenationPlugin());
     config.plugins.push(new CompilerLoggerPlugin());
     if (options.min) {
-      config.plugins.push(new UglifyJSPlugin());
+      config.plugins.push(new UglifyJSPlugin({
+        parallel: true
+      }));
       config.plugins.push(new UglifyCSSPlugin());
       config.plugins.push(new VersionPlugin(sysPath.join(this.cwd, 'ver'), this.config.entryExtNames));
     }
