@@ -8,18 +8,31 @@ export default class Version {
     this.versions = []
   }
 
+  getKey(fileParse) {
+    let name = '',
+      extName = fileParse.ext || '.js'
+    Object.keys(this.entryExtNames).forEach(key => {
+      if (this.entryExtNames[key].indexOf(extName) > -1) {
+        name = sysPath.join(fileParse.dir, `${fileParse.name}.${key}`)
+      }
+    })
+    return name
+  }
+
   apply(compiler) {
     compiler.plugin('after-emit', (compilation, callback) => {
       compilation.chunks.forEach(chunk => {
-        let fileParse = sysPath.parse(chunk.name),
-          extName = fileParse.ext || '.js',
-          name = ''
-        Object.keys(this.entryExtNames).forEach(key => {
-          if (this.entryExtNames[key].indexOf(extName) > -1) {
-            name = sysPath.join(fileParse.dir, `${fileParse.name}.${key}`)
+        if (!chunk.name) {
+          return
+        }
+        chunk.files.forEach((filename) => {
+          if (/\.js$/.test(filename) || /\.css$/.test(filename)) {
+            let matchInfo = filename.match(FILE_NAME_REG),
+              key = matchInfo[1] + matchInfo[3],
+              hash = matchInfo[2]
+            this.versions.push(`${key}#${hash}`)
           }
         })
-        this.versions.push(`${name}#${chunk.renderedHash}`)
       })
       fs.appendFile(sysPath.join(this.verFilePath, 'versions.mapping'), this.versions.join('\n') + '\n', (err) => {
         if (err) {

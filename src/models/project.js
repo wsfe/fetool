@@ -2,8 +2,6 @@ import webpack from 'webpack';
 import _ from 'lodash';
 import shell from 'shelljs';
 import mkdirp from 'mkdirp';
-// import UglifyJSPlugin from 'uglifyjs-webpack-plugin';
-import ParallelUglifyPlugin from 'webpack-parallel-uglify-plugin';
 import SingleConfig from './single.config';
 import MutliConfig from './mutli.config';
 import {
@@ -131,7 +129,7 @@ class Project {
     // }
     config.plugins.push(progressPlugin);
     config.plugins.push(new webpack.optimize.ModuleConcatenationPlugin());
-    // config.plugins.push(new CompilerLoggerPlugin());
+    config.plugins.push(new CompilerLoggerPlugin());
     if (options.min) {
       config.plugins.push(new UglifyJSPlugin());
       config.plugins.push(new UglifyCSSPlugin());
