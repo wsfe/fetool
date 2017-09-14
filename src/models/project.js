@@ -2,7 +2,8 @@ import webpack from 'webpack';
 import _ from 'lodash';
 import shell from 'shelljs';
 import mkdirp from 'mkdirp';
-import UglifyJSPlugin from 'uglifyjs-webpack-plugin';
+// import UglifyJSPlugin from 'uglifyjs-webpack-plugin';
+import ParallelUglifyPlugin from 'webpack-parallel-uglify-plugin';
 import SingleConfig from './single.config';
 import MutliConfig from './mutli.config';
 import {
@@ -10,8 +11,9 @@ import {
   UglifyCSSPlugin,
   HtmlCompilerPlugin,
   VersionPlugin,
-  cssIgnoreJSPlugin,
-  CompilerLoggerPlugin
+  CssIgnoreJSPlugin,
+  CompilerLoggerPlugin,
+  UglifyJSPlugin
 } from '../plugins';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 
@@ -82,7 +84,7 @@ class Project {
         configs = [jsConfig]; // 默认会有js配置
       outputPath = jsConfig.output.path;
       if (!_.isEmpty(cssConfig.entry)) {
-        cssConfig.plugins.push(new cssIgnoreJSPlugin());
+        cssConfig.plugins.push(new CssIgnoreJSPlugin());
         this._setPackConfig(cssConfig, options);
         this._setPublicPath(cssConfig, options.env);
         configs.push(cssConfig);
@@ -129,11 +131,9 @@ class Project {
     // }
     config.plugins.push(progressPlugin);
     config.plugins.push(new webpack.optimize.ModuleConcatenationPlugin());
-    config.plugins.push(new CompilerLoggerPlugin());
+    // config.plugins.push(new CompilerLoggerPlugin());
     if (options.min) {
-      config.plugins.push(new UglifyJSPlugin({
-        parallel: true
-      }));
+      config.plugins.push(new UglifyJSPlugin());
       config.plugins.push(new UglifyCSSPlugin());
       config.plugins.push(new VersionPlugin(sysPath.join(this.cwd, 'ver'), this.config.entryExtNames));
     }

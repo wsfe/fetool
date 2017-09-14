@@ -44,7 +44,9 @@
     "webpack-bundle-analyzer": "^2.8.3",
     "webpack-dev-middleware": "^1.11.0",
     "webpack-merge": "^4.1.0",
-    "webpack-sources": "^1.0.1"
+    "webpack-parallel-uglify-plugin": "^1.0.0",
+    "webpack-sources": "^1.0.1",
+    "worker-farm": "^1.5.0"
   },
   "devDependencies": {
     "babel-preset-es2015": "^6.24.1",
