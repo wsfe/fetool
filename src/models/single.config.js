@@ -52,7 +52,7 @@ class SingleConfig extends Config {
       return plugin instanceof ExtractTextPlugin;
     });
     if (!isExitExtractTextPlugin) {
-      let filename = 'base@[chunkhash].css';
+      let filename = 'base@[contenthash].css';
       if (this.NODE_ENV === ENV.LOC) {
         filename = 'base.css';
       } else if (this.NODE_ENV === ENV.DEV){

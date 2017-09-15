@@ -1,6 +1,9 @@
 import _ from 'lodash'
 import UglifyJS from './uglifyjs'
 
+/**
+ * 参考webpack-parallel-uglify-plugin以及uglifyjs-webpack-plugin
+ */
 export default class Plugin {
   constructor(options = {}) {
     this.options = _.merge({
