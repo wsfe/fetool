@@ -3,9 +3,6 @@
 export default class CompilerLogger {
 
   apply(compiler) {
-    compiler.plugin('compile', () => {
-
-    })
     compiler.plugin('done', (stats) => {
       let info = stats.toJson({ errorDetails: false });
 

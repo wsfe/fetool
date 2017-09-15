@@ -5,7 +5,7 @@ import mkdirp from 'mkdirp';
 import SingleConfig from './single.config';
 import MutliConfig from './mutli.config';
 import {
-  progressPlugin,
+  ProgressPlugin,
   UglifyCSSPlugin,
   HtmlCompilerPlugin,
   VersionPlugin,
@@ -54,7 +54,7 @@ class Project {
     if (_.isFunction(cb)) {
       config = cb(config);
     }
-    config.plugins.push(progressPlugin);
+    config.plugins.push(new ProgressPlugin());
     return webpack(config);
   }
 
@@ -65,9 +65,31 @@ class Project {
   pack(options) {
     spinner.text = 'start pack';
     spinner.start();
-    let startTime = Date.now(); // 编译开始时间
-    let outputPath;
-    let promise = null;
+    let startTime = Date.now(), // 编译开始时间
+      configs = this._getWebPackConfigs(options);
+    webpack(configs, (err, stats) => {
+      spinner.text = 'end pack';
+      spinner.text = '';
+      spinner.stop();
+      if (err) {
+        error(err.stack || err);
+        if (err.details) {
+          error(err.details);
+        }
+      }
+      let packDuration = Date.now() - startTime > 1000
+        ? Math.floor((Date.now() - startTime) / 1000) + 's'
+        : Date.now() - startTime + 'ms';
+      log('Packing Finished in ' + packDuration + '.\n');
+      if (!options.analyze) { // 如果需要分析数据，就不要退出进程
+        process.exit(); // 由于编译html比编译js快，所以可以再这边退出进程。
+      }
+    });
+  }
+
+  _getWebPackConfigs(options) {
+    let outputPath,
+      configs = [];
     if (this.mode === SINGLE_MODE) { // 如果是单页模式
       let config = this.getConfig(options.min ? 'prd' : 'dev');
       outputPath = config.output.path;
@@ -75,12 +97,12 @@ class Project {
       this._setHtmlComplierPlugin(config, options);
       this._setPublicPath(config, options.env);
       fs.removeSync(outputPath);
-      promise = this._getPackPromise([config], options);
+      configs.push(config);
     } else { // 如果是多页模式
       let cssConfig = this.getConfig(options.min ? 'prd' : 'dev', 'css'),
-        jsConfig = this.getConfig(options.min ? 'prd' : 'dev', 'js'),
-        configs = [jsConfig]; // 默认会有js配置
+        jsConfig = this.getConfig(options.min ? 'prd' : 'dev', 'js');
       outputPath = jsConfig.output.path;
+      configs.push(jsConfig); // 默认会有js配置
       if (!_.isEmpty(cssConfig.entry)) {
         cssConfig.plugins.push(new CssIgnoreJSPlugin());
         this._setPackConfig(cssConfig, options);
@@ -91,24 +113,9 @@ class Project {
       this._setHtmlComplierPlugin(jsConfig, options);
       this._setPublicPath(jsConfig, options.env);
       fs.removeSync(outputPath); // cssConfig和jsConfig的out.path是一样的，所以只需要删除一次就行。
-      promise = this._getPackPromise(configs, options);
     }
     this._clearVersion();
-    promise.then((statsArr) => {
-      let packDuration = Date.now() - startTime > 1000
-        ? Math.floor((Date.now() - startTime) / 1000) + 's'
-        : Date.now() - startTime + 'ms';
-      log('Packing Finished in ' + packDuration + '.\n');
-      if (!options.analyze) { // 如果需要分析数据，就不要退出进程
-        process.exit(); // 由于编译html比编译js快，所以可以再这边退出进程。
-      }
-    }).catch((reason) => {
-      error(reason.stack || reason);
-      if (reason.details) {
-        error(reason.details);
-      }
-      process.exit();
-    });
+    return configs;
   }
 
   /**
@@ -127,7 +134,7 @@ class Project {
     // if (options.min) {
     //   config.devtool = '';
     // }
-    config.plugins.push(progressPlugin);
+    config.plugins.push(new ProgressPlugin());
     config.plugins.push(new webpack.optimize.ModuleConcatenationPlugin());
     config.plugins.push(new CompilerLoggerPlugin());
     if (options.min) {
@@ -157,31 +164,6 @@ class Project {
       }
     }
     config.output.publicPath = `${domain}${config.output.publicPath}`;
-  }
-
-  _getPackPromise(configs, options) {
-    let promises = [];
-    let configsLen = configs.length;
-    configs.forEach((config) => {
-      let promise = new Promise((resolve, reject) => {
-        webpack(config, (err, stats) => {
-          configsLen--;
-          if (configsLen === 0) {
-            spinner.text = 'end pack';
-            spinner.text = '';
-            spinner.stop();
-          }
-          if (err) {
-            reject(err);
-            return;
-          }
-          resolve(stats);
-        });
-      });
-
-      promises.push(promise);
-    });
-    return Promise.all(promises);
   }
 
   build(options) {

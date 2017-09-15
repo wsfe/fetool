@@ -1,4 +1,4 @@
-import progressPlugin from './progress'
+import ProgressPlugin from './progress'
 import UglifyCSSPlugin from './uglifycss'
 import HtmlCompilerPlugin from './htmlCompiler'
 import VersionPlugin from './version'
@@ -8,7 +8,7 @@ import ExtTemplatePathPlugin from './extTemplatePath'
 import UglifyJSPlugin from './uglifyjs'
 
 export {
-  progressPlugin,
+  ProgressPlugin,
   UglifyCSSPlugin,
   HtmlCompilerPlugin,
   VersionPlugin,

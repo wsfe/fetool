@@ -9,8 +9,9 @@ class Progress {
     return new webpack.ProgressPlugin((percent, msg) => {
       if (percent === 0) {
         spinner.text = 'building...';
-        spinner.start();
         startTime = Date.now();
+      } else if (percent !== 1) {
+        spinner.text = `progress:${percent.toFixed(2)}`;
       }
       if (percent === 1) {
         endTime = Date.now();
@@ -18,8 +19,9 @@ class Progress {
         spinner.text = '\x1b[90m' + '[' + moment().format(dateFormat) + '] build complete in ' + (endTime - startTime) + 'ms.';
         spinner.stopAndPersist(logSymbols.info);
         spinner.text = '';
+        spinner.start()
       }
     });
   }
 }
-export default new Progress();
+export default Progress;
