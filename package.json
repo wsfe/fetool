@@ -1,6 +1,7 @@
 {
   "name": "fet-cli",
   "version": "0.1.0",
+  "description": "基于webpack的构建工具，解决开发时多项目时需要同时启动多个server的情况",
   "bin": {
     "fet": "bin/fet"
   },
@@ -9,6 +10,13 @@
     "prepublish": "gulp",
     "postinstall": "node ./bin/postinstall"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/angrytoro/fetool.git"
+  },
+  "keywords": ["webpack"],
+  "author": "angrytoro@gmail.com",
+  "homepage": "https://github.com/angrytoro/fetool",
   "dependencies": {
     "@types/pify": "0.0.28",
     "@types/webpack-sources": "^0.1.3",
