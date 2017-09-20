@@ -1,18 +1,19 @@
 import webpack from 'webpack';
 import _ from 'lodash';
-import ComputeCluster from 'compute-cluster';
 import shell from 'shelljs';
 import mkdirp from 'mkdirp';
-import url from 'url';
 import SingleConfig from './single.config';
 import MutliConfig from './mutli.config';
-import progressPlugin from '../plugins/progress';
+import {
+  ProgressPlugin,
+  UglifyCSSPlugin,
+  HtmlCompilerPlugin,
+  VersionPlugin,
+  CssIgnoreJSPlugin,
+  CompilerLoggerPlugin,
+  UglifyJSPlugin
+} from '../plugins';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
-import cssIgnoreJSPlugin from '../plugins/cssIgnoreJS';
-import utils from '../utils';
-
-const FILE_NAME_REG = /^([^\@]*)\@?([^\.]+)(\.(js|css))$/;
-const INCLUDE_REG = /<include\s+(.*\s)?src\s*=\s*"(\S+)".*><\/include>/g
 
 class Project {
   /**
@@ -53,7 +54,7 @@ class Project {
     if (_.isFunction(cb)) {
       config = cb(config);
     }
-    config.plugins.push(progressPlugin);
+    config.plugins.push(new ProgressPlugin());
     return webpack(config);
   }
 
@@ -64,34 +65,18 @@ class Project {
   pack(options) {
     spinner.text = 'start pack';
     spinner.start();
-    let startTime = Date.now(); // 编译开始时间
-    let outputPath;
-    let promise = null;
-    if (this.mode === SINGLE_MODE) { // 如果是单页模式
-      let config = this.getConfig(options.min ? 'prd' : 'dev');
-      outputPath = config.output.path;
-      this._setPackConfig(config, options);
-      this._setPublicPath(config, options.env);
-      fs.removeSync(outputPath);
-      promise = this._getPackPromise([config], options);
-    } else { // 如果是多页模式
-      let cssConfig = this.getConfig(options.min ? 'prd' : 'dev', 'css'),
-        jsConfig = this.getConfig(options.min ? 'prd' : 'dev', 'js'),
-        configs = [jsConfig]; // 默认会有js配置
-      outputPath = jsConfig.output.path;
-      if (!_.isEmpty(cssConfig.entry)) {
-        cssConfig.plugins.push(new cssIgnoreJSPlugin());
-        this._setPackConfig(cssConfig, options);
-        this._setPublicPath(cssConfig, options.env);
-        configs.push(cssConfig);
+    let startTime = Date.now(), // 编译开始时间
+      configs = this._getWebPackConfigs(options);
+    webpack(configs, (err, stats) => {
+      spinner.text = 'end pack';
+      spinner.text = '';
+      spinner.stop();
+      if (err) {
+        error(err.stack || err);
+        if (err.details) {
+          error(err.details);
+        }
       }
-      this._setPackConfig(jsConfig, options);
-      this._setPublicPath(jsConfig, options.env);
-      fs.removeSync(outputPath); // cssConfig和jsConfig的out.path是一样的，所以只需要删除一次就行。
-      promise = this._getPackPromise(configs, options);
-    }
-    promise.then((statsArr) => {
-      this.afterPack(statsArr, options);
       let packDuration = Date.now() - startTime > 1000
         ? Math.floor((Date.now() - startTime) / 1000) + 's'
         : Date.now() - startTime + 'ms';
@@ -99,73 +84,49 @@ class Project {
       if (!options.analyze) { // 如果需要分析数据，就不要退出进程
         process.exit(); // 由于编译html比编译js快，所以可以再这边退出进程。
       }
-    }).catch((reason) => {
-      error(reason.stack || reason);
-      if (reason.details) {
-        error(reason.details);
+    });
+  }
+
+  _getWebPackConfigs(options) {
+    let outputPath,
+      configs = [];
+    if (this.mode === SINGLE_MODE) { // 如果是单页模式
+      let config = this.getConfig(options.min ? 'prd' : 'dev');
+      outputPath = config.output.path;
+      this._setPackConfig(config, options);
+      this._setHtmlComplierPlugin(config, options);
+      this._setPublicPath(config, options.env);
+      fs.removeSync(outputPath);
+      configs.push(config);
+    } else { // 如果是多页模式
+      let cssConfig = this.getConfig(options.min ? 'prd' : 'dev', 'css'),
+        jsConfig = this.getConfig(options.min ? 'prd' : 'dev', 'js');
+      outputPath = jsConfig.output.path;
+      configs.push(jsConfig); // 默认会有js配置
+      if (!_.isEmpty(cssConfig.entry)) {
+        cssConfig.plugins.push(new CssIgnoreJSPlugin());
+        this._setPackConfig(cssConfig, options);
+        this._setPublicPath(cssConfig, options.env);
+        configs.push(cssConfig);
       }
-      process.exit();
-    });
-
-    if (options.compile === 'html') { // 如果需要编译html
-      this._compileHtml(outputPath);
+      this._setPackConfig(jsConfig, options);
+      this._setHtmlComplierPlugin(jsConfig, options);
+      this._setPublicPath(jsConfig, options.env);
+      fs.removeSync(outputPath); // cssConfig和jsConfig的out.path是一样的，所以只需要删除一次就行。
     }
+    this._clearVersion();
+    return configs;
   }
 
-  afterPack(statsArr, options) {
-    statsArr.forEach((stats) => {
-      this._logPack(stats);
-    });
-    if (options.min) {
-      this._generateVersion(statsArr);
-    }
-  }
-
-  _generateVersion(statsArr) {
+  /**
+   * 清理版本号文件夹
+   */
+  _clearVersion() {
     let verPath = sysPath.join(this.cwd, 'ver');
     if (fs.existsSync(verPath)) {
       shell.rm('-rf', verPath);
     }
     mkdirp.sync(verPath);
-
-    let versions = [];
-    statsArr.forEach(stats => {
-      let info = stats.toJson({ errorDetails: false });
-      info.assets.map(asset => {
-        let name = asset.name;
-        if (/\.js$/.test(name) || /\.css$/.test(name)) {
-          let matchInfo = name.match(FILE_NAME_REG),
-            filePath = matchInfo[1] + matchInfo[3],
-            version = matchInfo[2];
-          versions.push(filePath + '#' + version);
-        }
-      });
-    });
-    fs.writeFileSync(sysPath.join(verPath, 'versions.mapping'), versions.join('\n'), 'UTF-8');
-  }
-
-  _logPack(stats) {
-    let info = stats.toJson({ errorDetails: false });
-
-    if (stats.hasErrors()) {
-      info.errors.map((err) => {
-        error(err + '\n');
-      });
-    }
-
-    if (stats.hasWarnings()) {
-      info.warnings.map((warning) => {
-        warn(warning + '\n');
-      });
-    }
-
-    info.assets.map(asset => {
-      let fileSize = asset.size;
-      fileSize = fileSize > 1024
-        ? (fileSize / 1024).toFixed(2) + ' KB'
-        : fileSize + ' Bytes';
-      log(`- ${asset.name} - ${fileSize}`);
-    });
   }
 
   _setPackConfig(config, options) {
@@ -173,10 +134,22 @@ class Project {
     // if (options.min) {
     //   config.devtool = '';
     // }
-    config.plugins.push(progressPlugin);
+    config.plugins.push(new ProgressPlugin());
     config.plugins.push(new webpack.optimize.ModuleConcatenationPlugin());
+    config.plugins.push(new CompilerLoggerPlugin());
+    if (options.min) {
+      config.plugins.push(new UglifyJSPlugin());
+      config.plugins.push(new UglifyCSSPlugin());
+      config.plugins.push(new VersionPlugin(sysPath.join(this.cwd, 'ver'), this.config.entryExtNames));
+    }
     if (options.analyze) { // 是否启用分析
       config.plugins.push(new BundleAnalyzerPlugin());
+    }
+  }
+
+  _setHtmlComplierPlugin(config, options) {
+    if (options.compile === 'html') {
+      config.plugins.push(new HtmlCompilerPlugin(this.cwd, options.path));
     }
   }
 
@@ -191,113 +164,6 @@ class Project {
       }
     }
     config.output.publicPath = `${domain}${config.output.publicPath}`;
-  }
-
-  _getPackPromise(configs, options) {
-    let promises = [];
-    let configsLen = configs.length;
-    configs.forEach((config) => {
-      let promise = new Promise((resolve, reject) => {
-        webpack(config, (err, stats) => {
-          configsLen--;
-          if (configsLen === 0) {
-            spinner.text = 'end pack';
-            spinner.text = '';
-            spinner.stop();
-          }
-          if (err) {
-            reject(err);
-            return;
-          }
-          if (options.min) {
-            spinner.start();
-            this._min(stats, config.output.path).then(() => {
-              resolve(stats);
-            });
-          } else {
-            resolve(stats);
-          }
-        });
-      });
-
-      promises.push(promise);
-    });
-    return Promise.all(promises);
-  }
-
-  /**
-   * 压缩编译之后的代码代码
-   * @param {编译之后的数据} stats 
-   * @param {文件路径} cwd 
-   */
-  _min(stats, cwd) {
-
-    let cc = new ComputeCluster({
-      module: sysPath.resolve(__dirname, '../utils/uglifyWorker.js'),
-      max_backlog: -1
-    });
-    let resolve;
-    let promise = new Promise((res, rej) => {
-      resolve = res;
-    });
-    let assets = stats.toJson({
-      errorDetails: false
-    }).assets;
-    let processToRun = assets.length;
-    assets.forEach((asset) => {
-      cc.enqueue({
-        cwd,
-        assetName: asset.name
-      }, (err, response) => {
-        if (response.error) {
-          spinner.text = '';
-          spinner.stop();
-          info('\n');
-          spinner.text = `error occured while minifying ${response.error.assetName}`;
-          spinner.fail();
-          error(`line: ${response.error.line}, col: ${response.error.col} ${response.error.message} \n`);
-          spinner.start();
-        }
-        processToRun--;
-        spinner.text = `[Minify] ${assets.length -
-          processToRun}/${assets.length} assets`;
-        if (processToRun === 0) {
-          cc.exit();
-          spinner.stop();
-          logWithTime('minify complete!');
-          resolve();
-        }
-      });
-    });
-
-    return promise;
-  }
-
-  /**
-   * 用来编译自定义的html
-   * @param {输出路径} outputPath 
-   */
-  _compileHtml(outputPath) {
-    let dist = sysPath.join(outputPath, 'html');
-    fs.copy(sysPath.join(this.cwd, 'src/html'), dist, err => {
-      if (err) {
-        error('compile html failed:');
-        error(err);
-      } else {
-        utils.fs.readFileRecursiveSync(dist, ['html', 'htm'], (filePath, content) => {
-          content = content.toString();
-          let contentChange = false; // 默认内容没有更改
-          content = content.replace(INCLUDE_REG, ($0, $1, $2, $3) => {
-            contentChange = true;
-            return fs.readFileSync(url.resolve(filePath, $2), 'utf8');
-          });
-          if (contentChange) { // 如果内容更改了，那么就重写如文件里面
-            fs.writeFileSync(filePath, content);
-          }
-        });
-        success('compile html success!');
-      }
-    });
   }
 
   build(options) {

@@ -1,6 +1,7 @@
 {
   "name": "fet-cli",
-  "version": "0.0.8",
+  "version": "0.1.0",
+  "description": "基于webpack的构建工具，解决开发时多项目时需要同时启动多个server的情况",
   "bin": {
     "fet": "bin/fet"
   },
@@ -9,11 +10,19 @@
     "prepublish": "gulp",
     "postinstall": "node ./bin/postinstall"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/angrytoro/fetool.git"
+  },
+  "keywords": ["webpack"],
+  "author": "angrytoro@gmail.com",
+  "homepage": "https://github.com/angrytoro/fetool",
   "dependencies": {
+    "@types/pify": "0.0.28",
+    "@types/webpack-sources": "^0.1.3",
     "chalk": "^2.0.1",
     "chokidar": "^1.7.0",
     "commander": "^2.11.0",
-    "compute-cluster": "^0.0.9",
     "css-loader": "^0.28.4",
     "express": "^4.15.3",
     "extract-text-webpack-plugin": "^3.0.0",
@@ -28,6 +37,7 @@
     "morgan": "^1.8.2",
     "node-sass": "^4.5.3",
     "ora": "^1.3.0",
+    "pify": "^3.0.0",
     "right-pad": "^1.0.1",
     "sass-loader": "^6.0.6",
     "serve-favicon": "^2.4.3",
@@ -42,7 +52,9 @@
     "webpack": "^3.4.1",
     "webpack-bundle-analyzer": "^2.8.3",
     "webpack-dev-middleware": "^1.11.0",
-    "webpack-merge": "^4.1.0"
+    "webpack-merge": "^4.1.0",
+    "webpack-sources": "^1.0.1",
+    "worker-farm": "^1.5.0"
   },
   "devDependencies": {
     "babel-preset-es2015": "^6.24.1",

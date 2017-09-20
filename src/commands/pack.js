@@ -6,6 +6,7 @@ export default function pack(program) {
     .option('-e, --env [value]', '为某个env环境打包')
     .option('-m, --min', '压缩混淆代码')
     .option('-c, --compile [value]', '编译处理') // 编译处理一些比较特殊的文件，例如自定义的html文件
+    .option('-p, --path [value]', '指定需要编译的特殊文件地址') // 编译处理文件的源码地址，如果是编译html，默认是'src/html'
     .action((options) => {
       let cwd = process.cwd();
       let project = projectService.getProject(cwd, ENV.DEV, false);
@@ -16,6 +17,9 @@ export default function pack(program) {
       options.cwd = cwd;
       if (options.compile === true) {
         options.compile = 'html'; // 默认编译处理自定义的html。
+      }
+      if (options.compile && (options.path === true || !options.path)) {
+        options.path = 'src/html';
       }
       project.pack(options);
     });

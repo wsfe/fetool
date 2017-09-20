@@ -30,39 +30,35 @@ let readFileRecursive = function (dir, exts, cb) {
   if (typeof exts === 'string') {
     exts = [exts];
   }
-  try {
-    fs.readdir(dir, (err, files) => {
-      if (err) {
-        throw err;
-      }
-      files.forEach((file) => {
-        let filePath = sysPath.join(filePath, file);
-        fs.stat(filePath, (err, stats) => {
-          if (err) {
-            throw err;
-          }
-          if (stats.isDirectory()) {
-            readFileRecursive(filePath, ext, cb);
-          }
-          if (stats.isFile() && exts.indexOf(filePath.split('.').pop()) > -1) {
-            fs.readFile(filePath, (err, data) => {
-              if (err) {
-                throw err;
-              } else {
-                cb(filePath, data);
-              }
-            });
-          }
-        });
+  fs.readdir(dir, (err, files) => {
+    if (err) {
+      throw err;
+    }
+    files.forEach((file) => {
+      let filePath = sysPath.join(filePath, file);
+      fs.stat(filePath, (err, stats) => {
+        if (err) {
+          throw err;
+        }
+        if (stats.isDirectory()) {
+          readFileRecursive(filePath, ext, cb);
+        }
+        if (stats.isFile() && exts.indexOf(filePath.split('.').pop()) > -1) {
+          fs.readFile(filePath, (err, data) => {
+            if (err) {
+              throw err;
+            } else {
+              cb(filePath, data);
+            }
+          });
+        }
       });
     });
-  } catch (err) {
-    error(err);
-  }
+  });
 };
 
 /**
- * 异步递归遍历读取某个文件夹下面所有已exts数组里面值结尾的文件
+ * 同步递归遍历读取某个文件夹下面所有已exts数组里面值结尾的文件
  * @param {文件夹路径} dir 
  * @param {文件后缀数组，例如['js', 'css', 'html']} exts 
  * @param {读取文件的回调函数} cb 
@@ -71,20 +67,16 @@ let readFileRecursiveSync = function (dir, exts, cb) {
   if (typeof exts === 'string') {
     exts = [exts];
   }
-  try {
-    fs.readdirSync(dir).forEach(file => {
-      let filePath = sysPath.join(dir, file);
-      let stats = fs.statSync(filePath);
-      if (stats.isDirectory()) {
-        readFileRecursiveSync(filePath, exts, cb);
-      }
-      if (stats.isFile() && exts.indexOf(filePath.split('.').pop()) > -1) {
-        cb(filePath, fs.readFileSync(filePath));
-      }
-    });
-  } catch(err) {
-    error(err);
-  }
+  fs.readdirSync(dir).forEach(file => {
+    let filePath = sysPath.join(dir, file);
+    let stats = fs.statSync(filePath);
+    if (stats.isDirectory()) {
+      readFileRecursiveSync(filePath, exts, cb);
+    }
+    if (stats.isFile() && exts.indexOf(filePath.split('.').pop()) > -1) {
+      cb(filePath, fs.readFileSync(filePath));
+    }
+  });
 }
 
 /**
@@ -117,6 +109,7 @@ let getFilePathRecursive = function (dir, exts) {
 
 export default {
   deleteFolderRecursive,
+  readFileRecursive,
   readFileRecursiveSync,
   getFilePathRecursive
 };
