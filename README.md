@@ -114,3 +114,5 @@ yarn global add fet-cli
 ## todo list
 1. 修复重复打包问题，提取出公共包
 2. 完善`init`命令(当前命令还不太完善，请先不使用)
+3. 新增热更新功能
+4. 优化server的缓存
