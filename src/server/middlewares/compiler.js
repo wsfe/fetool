@@ -1,12 +1,19 @@
-import { projectService } from '../../services';
 import webpackDevMiddleware from 'webpack-dev-middleware';
 import chokidar from 'chokidar';
 import _ from 'lodash';
+import LRU from 'lru-cache';
+import { projectService } from '../../services';
 
 const QUERY_REG = /\?.+$/;
 const VER_REG = /@[\d\w]+(?=\.\w+)/;
-let webpackMiddleCache = {}; // webpack-dev-middleware中间件的缓存
-let middlewareCache = {}; // 根据存储单页和多页模式的中间件（由于单页和多页模式要做不同的的处理，因此需要分webpackMiddleCache和middlewareCache，不能每次请求都要去创建一次webpack-dev-middleware）
+let singleModeCache = LRU({
+  max: 5
+}); // 单页应用的缓存，最多存储5个
+let multiModeCache = LRU({
+  max: 2,
+  maxAge: 1000 * 60 * 60 * 24 * 3 // 超过3天就清除缓存
+}); // 多页应用的缓存，最多缓存50个，超过3天就清除
+
 let watchCache = {};
 let verbose = false; // 显示编译的详细信息
 
@@ -14,13 +21,16 @@ function watchConfig(projectName, paths, projectCwd) {
   if (!watchCache[projectName]) {
     let watcher = chokidar.watch(paths);
     watcher.on('change', () => {
-      Object.keys(middlewareCache).forEach(function (key) {
-        if (projectName === key || key.indexOf(projectName) ===0 && /[\/\\]/.test(key.substr(projectName.length, 1))) {
-          delete middlewareCache[key];
-          delete webpackMiddleCache[key];
-          projectService.deleteProject(projectCwd, ENV.LOC);
-        }
-      });
+      if (singleModeCache.has(projectName)) {
+        singleModeCache.del(projectName);
+      } else {
+        multiModeCache.forEach((value, key, cache) => {
+          if (key.indexOf(projectName) === 0 && /[\/\\]/.test(key.substr(projectName.length, 1))) {
+            cache.del(key);
+          }
+        });
+      }
+      projectService.deleteProject(projectCwd, ENV.LOC);
     });
     watchCache[projectName] = watcher;
   }
@@ -86,19 +96,13 @@ function getMiddleWare(compiler) {
  * @param {project名字} projectName 
  */
 function singleMode(project, projectName) {
-  if (!middlewareCache[projectName]) {
-    middlewareCache[projectName] = (req, res, next) => {
-      if (webpackMiddleCache[projectName]) {
-        webpackMiddleCache[projectName](req, res, next);
-        return;
-      }
-      let compiler = project.getServerCompiler();
-      let middleware = getMiddleWare(compiler);
-      webpackMiddleCache[projectName] = middleware;
-      middleware(req, res, next);
-    };
+  let middleware = singleModeCache.get(projectName);
+  if (!middleware) {
+    let compiler = project.getServerCompiler();
+    middleware = getMiddleWare(compiler);
+    singleModeCache.set(projectName, middleware);
   }
-  return middlewareCache[projectName];
+  return middleware;
 }
 
 /**
@@ -107,34 +111,26 @@ function singleMode(project, projectName) {
  * @param {project名字} projectName 
  */
 function multiMode(project, projectName, requestUrl, cacheId) {
-  if (!middlewareCache[cacheId]) {
-    middlewareCache[cacheId] = (req, res, next) => {
-
-      if (webpackMiddleCache[cacheId]) {
-        webpackMiddleCache[cacheId](req, res, next);
-        return;
+  let middleware = multiModeCache.get(cacheId);
+  if (!middleware) {
+    let newConfig;
+    let compiler = project.getServerCompiler({
+      type: sysPath.extname(requestUrl).substr(1),
+      cb: (config) => {
+        newConfig = getMulitModeConfig(config, requestUrl);
+        return newConfig ? newConfig : config;
       }
-
-      let newConfig;
-      let compiler = project.getServerCompiler({
-        type: sysPath.extname(requestUrl).substr(1),
-        cb: (config) => {
-          newConfig = getMulitModeConfig(config, requestUrl);
-          return newConfig ? newConfig : config;
-        }
-      });
-      if (!newConfig) {
+    });
+    if (!newConfig) { // 如果配置不存在
+      return (req, res, next) => {
         res.statusCode = 404;
         res.end('[ft] - 资源入口未找到，请检查项目' + projectName + '的配置文件.');
-        return;
       }
-
-      let middleware = getMiddleWare(compiler);
-      webpackMiddleCache[cacheId] = middleware;
-      middleware(req, res, next);
-    };
+    }
+    middleware = getMiddleWare(compiler);
+    multiModeCache.set(cacheId, middleware);
   }
-  return middlewareCache[cacheId];
+  return middleware;
 }
 
 function getWatchPaths(paths, projectCwd) {
