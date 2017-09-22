@@ -5,8 +5,8 @@ import _ from 'lodash';
 
 const QUERY_REG = /\?.+$/;
 const VER_REG = /@[\d\w]+(?=\.\w+)/;
-let webpackMiddleCache = {};
-let middlewareCache = {};
+let webpackMiddleCache = {}; // webpack-dev-middleware中间件的缓存
+let middlewareCache = {}; // 根据存储单页和多页模式的中间件（由于单页和多页模式要做不同的的处理，因此需要分webpackMiddleCache和middlewareCache，不能每次请求都要去创建一次webpack-dev-middleware）
 let watchCache = {};
 let verbose = false; // 显示编译的详细信息
 
