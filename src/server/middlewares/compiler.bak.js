@@ -1,4 +1,6 @@
 import webpackDevMiddleware from 'webpack-dev-middleware';
+import webpackHotMiddleware from 'webpack-hot-middleware';
+import webpack from 'webpack';
 import chokidar from 'chokidar';
 import _ from 'lodash';
 import LRU from 'lru-cache';
@@ -6,6 +8,7 @@ import { projectService } from '../../services';
 
 const QUERY_REG = /\?.+$/;
 const VER_REG = /@[\d\w]+(?=\.\w+)/;
+let _app = null;
 let singleModeCache = LRU({
   max: 5
 }); // 单页应用的缓存，最多存储5个
@@ -91,6 +94,23 @@ function getMiddleWare(compiler) {
 }
 
 /**
+ * 将entry加上热更新模块
+ * @param {webpack配置文件} config 
+ */
+function setHotEntry(config) {
+  Object.keys(config.entry).forEach((key) => {
+    let value = config.entry[key];
+    let whmPath = require.resolve('webpack-hot-middleware/client');
+    let hotEntry = `${whmPath}?reload=true&path=/__webpack_hmr&timeout=9999999&overlay=false`;
+    if (_.isArray(value)) {
+      value.push(hotEntry)
+    } else {
+      config.entry[key] = [value, hotEntry]
+    }
+  })
+}
+
+/**
  * 单页模式的编译
  * @param {Project对象} project 
  * @param {project名字} projectName 
@@ -98,8 +118,36 @@ function getMiddleWare(compiler) {
 function singleMode(project, projectName) {
   let middleware = singleModeCache.get(projectName);
   if (!middleware) {
-    let compiler = project.getServerCompiler();
+    let compiler = project.getServerCompiler({
+      cb(config) {
+        if (_args.hot) { // 如果是热更新
+          setHotEntry(config);
+          config.plugins.push(new webpack.HotModuleReplacementPlugin());
+          config.plugins.push(new webpack.NoEmitOnErrorsPlugin());
+        }
+        return config;
+      }
+    });
     middleware = getMiddleWare(compiler);
+    // let wpHotMiddle = _args.hot? webpackHotMiddleware(compiler, {
+    //   log: false,
+    //   path: '/__webpack_hmr'
+    // }): null;
+    // middleware = (req, res, next) => {
+    //   if (_args.hot) {
+    //     wpDevMiddle(req, res, next).then(() => {
+    //       wpHotMiddle(req, res, next);
+    //     })
+    //   } else {
+        
+    //   }
+    // };
+    if (_args.hot) {
+      _app.use(webpackHotMiddleware(compiler, {
+        log: false,
+        path: '/__webpack_hmr'
+      }));
+    }
     singleModeCache.set(projectName, middleware);
   }
   return middleware;
@@ -142,9 +190,13 @@ function getWatchPaths(paths, projectCwd) {
   return result;
 }
 
-export default function (options) {
+export default function (app, options) {
+  _app = app;
   _args = options;
   return function (req, res, next) {
+    if (req.url.indexOf('__webpack_hmr') > 0) {
+      return next()
+    }
     let url = req.url, // url == '/projectname/prd/..../xxx@hash值.js|css';
       filePaths = url.split('/'),
       projectName = filePaths[1], // 项目名称
@@ -161,7 +213,9 @@ export default function (options) {
     }
 
     if (project.mode === SINGLE_MODE) {
-      req.url = '/' + filePaths.slice(3).join('/').replace(QUERY_REG, '').replace(VER_REG, '');
+      if (req.url.indexOf('__webpack_hmr') < 0) {
+        req.url = '/' + filePaths.slice(3).join('/').replace(QUERY_REG, '').replace(VER_REG, '');
+      }
       singleMode(project, projectName)(req, res, next);
     }
 

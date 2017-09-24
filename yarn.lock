@@ -8,6 +8,10 @@
   dependencies:
     "@types/node" "*"
 
+"@types/lru-cache@^4.1.0":
+  version "4.1.0"
+  resolved "http://registry.npm.taobao.org/@types/lru-cache/download/@types/lru-cache-4.1.0.tgz#ef69ce9c3ebb46bd146f0d80f0c1ce38b0508eae"
+
 "@types/node@*":
   version "8.0.28"
   resolved "http://registry.npm.taobao.org/@types/node/download/@types/node-8.0.28.tgz#86206716f8d9251cf41692e384264cbd7058ad60"
