@@ -29,8 +29,8 @@ class Server {
       let defaultHttpsConfigPath = sysPath.join(__dirname, '../config');
 
       let httpsOpt = {
-        key: fs.readFileSync(globalConfig['https-key'] || defaultHttpsConfigPath + 'server.key'),
-        cert: fs.readFileSync(globalConfig['https-crt'] || defaultHttpsConfigPath + 'server.crt')
+        key: fs.readFileSync(globalConfig['https-key'] || sysPath.join(defaultHttpsConfigPath, 'server.key')),
+        cert: fs.readFileSync(globalConfig['https-crt'] || sysPath.join(defaultHttpsConfigPath, 'server.crt'))
       };
       https.createServer(httpsOpt, this.app).listen(443, () => {
         log('Starting up server, serving at: ', process.cwd());

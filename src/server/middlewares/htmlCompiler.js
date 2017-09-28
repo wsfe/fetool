@@ -16,7 +16,12 @@ export default function(cwd) {
       } else {
         let content = data.toString();
         content = content.replace(INCLUDE_REG, ($0, $1, $2, $3) => {
-          return fs.readFileSync(sysPath.join(cwd, url.resolve(pathname, $2)), 'utf8');
+          try {
+            return fs.readFileSync(sysPath.join(cwd, url.resolve(pathname, $2)), 'utf8');
+          } catch(err) {
+            error(err.message);
+            return '';
+          }
         });
         res.type('html').send(Buffer.from(content, 'utf8'));
       }

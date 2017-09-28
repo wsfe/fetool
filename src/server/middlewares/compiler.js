@@ -149,16 +149,15 @@ export default function (options) {
       filePaths = url.split('/'),
       projectName = filePaths[1], // 项目名称
       projectCwd = sysPath.join(process.cwd(), projectName), // 项目的绝对路径
-      project = projectService.getProject(projectCwd, ENV.LOC, true),
-      baseWpConfig = project.getConfig('local', 'base'),
-      outputDir = baseWpConfig.output.path || 'prd';
+      outputDir = 'prd';
 
     // 非output.path下的资源不做任何处理
-    if (filePaths[2] !== sysPath.relative(projectCwd, outputDir)) { // 不知道为毛之前可以用relative这个函数，现在就不行了
-      // if (filePaths[2] !== outputDir.replace(/\W*(\w+)\W*/g, ($0, $1) => { return $1; })) { // 暂时这么解决
+    if (filePaths[2] !== outputDir) {
       next();
       return;
     }
+
+    let project = projectService.getProject(projectCwd, ENV.LOC, true);
 
     if (project.mode === SINGLE_MODE) {
       req.url = '/' + filePaths.slice(3).join('/').replace(QUERY_REG, '').replace(VER_REG, '');
