@@ -1,11 +1,11 @@
-import { projectService } from '../services';
+import Project from '../models/project'
 
 export default function build(program) {
   program.command('build')
     .description('线上编译')
     .option('-a, --analyze', '启用分析')
     .action((options) => {
-      let project = projectService.getProject(process.cwd(), ENV.PRD, false);
+      let project = new Project(process.cwd(), ENV.PRD);
       project.build(options);
     });
 };

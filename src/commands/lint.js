@@ -1,7 +1,7 @@
 import standard from 'standard';
 import chalk from 'chalk';
 import table from 'text-table';
-import { projectService } from '../services';
+import Project from '../models/project';
 
 /**
  * Given a word and a count, append an s if count is not one.
@@ -68,7 +68,7 @@ export default function lint(program) {
   program.command('lint')
     .description('检测代码')
     .action(() => {
-      let project = projectService.getProject(process.cwd(), ENV.PRD, false);
+      let project = new Project(process.cwd(), ENV.PRD);
       let lintConfig = project.userConfig.lint || {};
       let opts = lintConfig.opts || {};
       opts.cwd = sysPath.join(process.cwd(), lintConfig.cwd ? lintConfig.cwd : 'src');

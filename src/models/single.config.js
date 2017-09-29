@@ -38,7 +38,7 @@ class SingleConfig extends Config {
     } else if (typeof webpackConfig === 'function') {
       this.baseConfig = webpackConfig.call(this, this.baseConfig, {env: this.NODE_ENV, plugins: {ExtractTextPlugin}}, this);
     } else {
-      console.error('webpackConfig 设置错误');
+      error('webpackConfig 设置错误');
       return;
     }
     this.fixContext(this.baseConfig);

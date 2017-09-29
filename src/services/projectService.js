@@ -1,18 +1,14 @@
 import Project from '../models/project';
 
-let projectCache = {
-  [ENV.LOC]: {},
-  [ENV.DEV]: {},
-  [ENV.PRD]: {}
-};
+let devProjectCache = {};
 
-export function getProject(cwd, env, cache) {
-  if (!projectCache[env][cwd] || !cache) {
-    projectCache[env][cwd] = new Project(cwd, env);
+export function getDevProject(cwd) {
+  if (!devProjectCache[cwd]) {
+    return new Project(cwd, ENV.LOC);
   }
-  return projectCache[env][cwd];
+  return devProjectCache[cwd];
 };
 
-export function deleteProject(cwd, env) {
-  delete projectCache[env][cwd];
+export function deleteDevProject(cwd) {
+  delete devProjectCache[cwd];
 }

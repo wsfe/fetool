@@ -1,12 +1,12 @@
-import { projectService } from '../services';
 import _ from 'lodash';
 import shell from 'shelljs';
+import Project from '../models/project';
 
 export default function sync(program) {
   program.command('sync <env>') // 同步到名字为env的开发环境
     .description('同步到<env>机器')
     .action((env) => {
-      let project = projectService.getProject(process.cwd(), ENV.DEV, false);
+      let project = new Project(process.cwd(), ENV.DEV);
       let syncInstance = new Sync(project);
       syncInstance.sync(env);
     });

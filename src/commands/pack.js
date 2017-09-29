@@ -1,4 +1,4 @@
-import { projectService } from '../services';
+import Project from '../models/project';
 
 export default function pack(program) {
   program.command('pack')
@@ -9,7 +9,7 @@ export default function pack(program) {
     .option('-p, --path [value]', '指定需要编译的特殊文件地址') // 编译处理文件的源码地址，如果是编译html，默认是'src/html'
     .action((options) => {
       let cwd = process.cwd();
-      let project = projectService.getProject(cwd, ENV.DEV, false);
+      let project = new Project(cwd, ENV.DEV);
       if (options.env && !project.userConfig.servers[options.env]) {
         error(options.env, '环境不存在，请选择正确的发布环境');
         process.exit(1);

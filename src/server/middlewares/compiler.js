@@ -30,7 +30,7 @@ function watchConfig(projectName, paths, projectCwd) {
           }
         });
       }
-      projectService.deleteProject(projectCwd, ENV.LOC);
+      projectService.deleteDevProject(projectCwd);
     });
     watchCache[projectName] = watcher;
   }
@@ -157,7 +157,7 @@ export default function (options) {
       return;
     }
 
-    let project = projectService.getProject(projectCwd, ENV.LOC, true);
+    let project = projectService.getDevProject(projectCwd);
 
     if (project.mode === SINGLE_MODE) {
       req.url = '/' + filePaths.slice(3).join('/').replace(QUERY_REG, '').replace(VER_REG, '');

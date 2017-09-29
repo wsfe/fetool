@@ -47,9 +47,9 @@ class Project {
   getServerCompiler({ cb, type } = {}) {
     let config = {};
     if (this.mode === SINGLE_MODE) {
-      config = this.getConfig('local');
+      config = this.getConfig();
     } else {
-      config = this.getConfig('local', type);
+      config = this.getConfig(type);
     }
     if (_.isFunction(cb)) {
       config = cb(config);
@@ -58,15 +58,15 @@ class Project {
     return webpack(config);
   }
 
-  getConfig(env, type) {
-    return this.config.getConfig(env, type);
+  getConfig(type) {
+    return this.config.getConfig(type);
   }
 
   pack(options) {
     spinner.text = 'start pack';
     spinner.start();
     let startTime = Date.now(), // 编译开始时间
-      configs = this._getWebPackConfigs(options);
+      configs = this._getWebpackConfigs(options);
     webpack(configs, (err, stats) => {
       spinner.text = 'end pack';
       spinner.text = '';
@@ -87,11 +87,11 @@ class Project {
     });
   }
 
-  _getWebPackConfigs(options) {
+  _getWebpackConfigs(options) {
     let outputPath,
       configs = [];
     if (this.mode === SINGLE_MODE) { // 如果是单页模式
-      let config = this.getConfig(options.min ? 'prd' : 'dev');
+      let config = this.getConfig();
       outputPath = config.output.path;
       this._setPackConfig(config, options);
       this._setHtmlComplierPlugin(config, options);
@@ -99,8 +99,8 @@ class Project {
       fs.removeSync(outputPath);
       configs.push(config);
     } else { // 如果是多页模式
-      let cssConfig = this.getConfig(options.min ? 'prd' : 'dev', 'css'),
-        jsConfig = this.getConfig(options.min ? 'prd' : 'dev', 'js');
+      let cssConfig = this.getConfig('css'),
+        jsConfig = this.getConfig('js');
       outputPath = jsConfig.output.path;
       configs.push(jsConfig); // 默认会有js配置
       if (!_.isEmpty(cssConfig.entry)) {

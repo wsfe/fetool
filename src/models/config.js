@@ -16,29 +16,7 @@ class Config {
     this.baseConfig = {
       context: sysPath.join(cwd, 'src'),
       entry: {},
-      output: {
-        local: {
-          path: './prd/',
-          filename: '[noextname][ext]',
-          chunkFilename: '[id].chunk.js',
-          // publicPath: '//' + sysPath.join('img.chinanetcenter.com', projectName, 'prd/')
-          publicPath: `/${projectName}/prd/`
-        },
-        dev: {
-          path: './dev/',
-          filename: '[noextname]@dev[ext]',
-          chunkFilename: '[id].chunk@dev.js',
-          // publicPath: '//' + sysPath.join('img.chinanetcenter.com', projectName, 'dev/')
-          publicPath: `/${projectName}/dev/`
-        },
-        prd: {
-          path: './prd/',
-          filename: '[noextname]@[chunkhash][ext]',
-          chunkFilename: '[id].chunk@[chunkhash].js',
-          // publicPath: '//' + sysPath.join('img.chinanetcenter.com', projectName, 'prd/')
-          publicPath: `/${projectName}/prd/`        
-        }
-      },
+      output: this._getOutputConfig(projectName, this.NODE_ENV),
       module: {
         rules: [{
           test: /\.json$/,
@@ -79,6 +57,41 @@ class Config {
     // this.config = _.cloneDeep(this.baseConfig);
   }
 
+  /**
+   * 根据项目名称和编译环境获取output配置
+   * @param {项目名称} projectName 
+   * @param {编译环境：local，develop，product} env 
+   */
+  _getOutputConfig(projectName, env) {
+    return {
+      [ENV.LOC]: {
+        path: './prd/',
+        filename: '[noextname][ext]',
+        chunkFilename: '[id].chunk.js',
+        // publicPath: '//' + sysPath.join('img.chinanetcenter.com', projectName, 'prd/')
+        publicPath: `/${projectName}/prd/`
+      },
+      [ENV.DEV]: {
+        path: './dev/',
+        filename: '[noextname]@dev[ext]',
+        chunkFilename: '[id].chunk@dev.js',
+        // publicPath: '//' + sysPath.join('img.chinanetcenter.com', projectName, 'dev/')
+        publicPath: `/${projectName}/dev/`
+      },
+      [ENV.PRD]: {
+        path: './prd/',
+        filename: '[noextname]@[chunkhash][ext]',
+        chunkFilename: '[id].chunk@[chunkhash].js',
+        // publicPath: '//' + sysPath.join('img.chinanetcenter.com', projectName, 'prd/')
+        publicPath: `/${projectName}/prd/`        
+      }
+    }[env];
+  }
+
+  /**
+   * 设置扩展名映射，将一些特殊扩展名映射到相应的js和css对象里面
+   * @param {需要输出的对象的扩展名} entryExtNames 
+   */
   setEntryExtNames(entryExtNames) {
     if (entryExtNames) {
       if (entryExtNames.js) {
@@ -92,6 +105,10 @@ class Config {
     }
   }
 
+  /**
+   * 设置用户需要导出的对象，支持数组，支持map对象
+   * @param {用户需要导出的文件对象} entries 
+   */
   setExports(entries) {
     if (entries) {
       if (Array.isArray(entries)) {
@@ -138,9 +155,8 @@ class Config {
     return entry;
   }
 
-  getConfig(env) {
+  getConfig() {
     let config = _.cloneDeep(this.baseConfig);
-    config.output = config.output[env];
     return config;
   }
 
@@ -166,12 +182,9 @@ class Config {
   // 处理output
   fixOutput(config) {
     let output = config.output;
-    Object.keys(output).forEach((env) => {
-      let op = output[env];
-      if (op.path && !sysPath.isAbsolute(op.path)) {
-        op.path = sysPath.join(this.cwd, op.path);
-      }
-    });
+    if (output.path && !sysPath.isAbsolute(output.path)) {
+      output.path = sysPath.join(this.cwd, output.path);
+    }
   }
 
   getSourceType(name) {

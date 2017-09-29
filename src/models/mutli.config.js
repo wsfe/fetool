@@ -7,7 +7,6 @@ class MutliConfig extends Config {
     super(project);
     this.cssConfig = _.cloneDeep(this.baseConfig);
     this.jsConfig = _.cloneDeep(this.baseConfig);
-    this.setDefaultModuleRules();
     this.separateEntry();
     this.setWebpackConfig(this.extendConfig.webpackConfig);
   }
@@ -23,39 +22,6 @@ class MutliConfig extends Config {
       let type = this.getSourceType(key);
       this[type + 'Config'].entry[key] = entry[key];
     });
-  }
-
-  setDefaultModuleRules() {
-    this.cssConfig.module.rules = _.concat(this.cssConfig.module.rules, [{
-      test: /\.css$/,
-      use: ExtractTextPlugin.extract({
-        fallback: require.resolve('style-loader'),
-        use: require.resolve('css-loader')
-      })
-    }, {
-      test: /\.less$/,
-      use: ExtractTextPlugin.extract({
-        fallback: require.resolve('style-loader'),
-        use: [require.resolve('css-loader'), require.resolve('less-loader')]
-      })
-    }, {
-      test: /\.(scss|sass)$/,
-      use: ExtractTextPlugin.extract({
-        fallback: require.resolve('style-loader'),
-        use: [require.resolve('css-loader'), require.resolve('sass-loader')]
-      })
-    }]);
-
-    this.jsConfig.module.rules = _.concat(this.jsConfig.module.rules, [{
-      test: /\.css$/,
-      use: [require.resolve('style-loader'), require.resolve('css-loader')]
-    }, {
-      test: /\.less$/,
-      use: [require.resolve('style-loader'), require.resolve('css-loader'), require.resolve('less-loader')]
-    }, {
-      test: /\.(scss|sass)$/,
-      use: [require.resolve('style-loader'), require.resolve('css-loader'), require.resolve('sass-loader')]
-    }]);
   }
 
   setWebpackConfig(webpackConfig = {}) {
@@ -82,24 +48,8 @@ class MutliConfig extends Config {
     this.fixOutput(this.cssConfig);
   }
 
-  /**
-   * 
-   * @param {配置文件} config 
-   * @description 补充那些没有添加上去的插件，有可能jsconfig可以不需要，不过这里都添加上去了，之后如果出现bug，就需要处理。
-   */
-  fixPlugins(config) {
-    let isExitExtractTextPlugin = config.plugins.some((plugin) => {
-      return plugin instanceof ExtractTextPlugin;
-    });
-    if (!isExitExtractTextPlugin) {
-      config.plugins.push(new ExtractTextPlugin(config.output.filename.replace('[ext]', '.css')))
-    }
-  }
-
-  getConfig(env, type) {
+  getConfig(type) {
     let config = _.cloneDeep(this[(type || 'base') + 'Config']);
-    config.output = config.output[env];
-    this.fixPlugins(config);
     return config;
   }
 }
