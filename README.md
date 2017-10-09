@@ -29,11 +29,29 @@ yarn global add fet-cli
 请安装fet之后，在命令行运行`fet`查看命令说明，如果对某个命令感兴趣请运行`fet commandName -h`查看。
 
 ### server
-用于启动服务器，支持多项目并行开发。（ps：别人需要多个webpack server，我这边只需要一个fet server）
+用于启动服务器，支持多项目并行开发。（ps：别人需要多个webpack server，我这边只需要一个fet server）,默认开启mock服务。
 * `-p`:设置服务端口，默认是80
 * `-w`:设置需要监听的文件，默认是监听`ft.config.js`以及`build`文件夹。如果要新增可以用逗号隔开，例如：'src/home,base'。
 * `-s`:开启HTTPS服务，如果没有配置全局的证书，那么会启用默认证书，默认证书是没有经过认证的，在目前的浏览器，会引起不可预知的错误。因此，建议不要用默认证书。如果需要配置经过认证的证书，请执行`fet config https-key <path-to-your-key>`，以及`fet config https-crt <path-to-your-crt>`。
 * `-v`:提示server是否显示详细的编译信息，默认不开启。
+
+#### server mock
+server默认开启mock服务，支持的方式是在每个html页面下创建前缀一样，后缀加一个mock的js文件。例如：一个html文件叫abc.html那么如果需要mock，就需要创建一个abc.mock.js文件。mock文件的格式如下：
+```
+module.exports = [
+  {
+    url: '请求的url地址',
+    method: 'get|post|put等，默认get',
+    //response: 'response支持function或者url，如果是url的话mock server会转发相应的请求到response指定的接口',
+    response: function(req) {
+      // 返回mockjs格式的json数据
+      return {
+        "name|1-10": "★"
+      }
+    }
+  }
+]
+```
 
 ### pack
 对代码进行打包，但是不进行编译，可为不同的环境打包代码。
