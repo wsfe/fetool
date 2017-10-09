@@ -1,5 +1,5 @@
 # ft2.0
-ft2.0是ft1.0的升级版，设计思想是来自[fekit](https://github.com/rinh/fekit)，基本上所有命令的设计都是来自`fekit`，继承了`fekit`的核心优点。ft2.0除了支持多页应用以外，还支持单页应用。从ft1.0迁移到ft2.0的成本很低，只要稍微修改下配置文件就够了，相应的配置说明，请查看下面的配置文档。ft2.0默认内置了`sass-loader`,`less-loader`,`json-loader`,`html-loader`,`css-loader`,`style-loader`.
+ft2.0是ft1.0的升级版，设计思想是来自[fekit](https://github.com/rinh/fekit)，基本上所有命令的设计都是来自`fekit`，继承了`fekit`的核心优点。ft2.0除了支持多页应用以外，还支持单页应用。从ft1.0迁移到ft2.0的成本很低，只要稍微修改下配置文件就够了，相应的配置说明，请查看下面的配置文档。ft2.0默认内置了`json-loader`,`html-loader`
 
 ## ft2.0解决了如下问题：
 1. 线上源码与本地源码映射关系（本地代理，类似`fiddler`的匹配替换功能），方便调试
@@ -115,4 +115,3 @@ yarn global add fet-cli
 1. 修复重复打包问题，提取出公共包
 2. 完善`init`命令(当前命令还不太完善，请先不使用)
 3. 新增热更新功能
-4. 优化server的缓存
