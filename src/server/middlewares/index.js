@@ -6,11 +6,13 @@ import logger from './logger';
 import htmlCompiler from './htmlCompiler';
 import Mock from './mock'
 import cors from './cors'
+import webpackStatic from './webpackStatic'
 
 export default function initMiddlewares(app, options) {
   let mockInstance = new Mock(process.cwd());
   app.use(logger);
-  app.use(/.*\.(html|eot|ttf|woff|svg)/, cors)
+  app.use(/.*\.(html|eot|ttf|woff|svg|json)/, cors)
+  app.use(webpackStatic)
   app.use(mockInstance.loadRules.bind(mockInstance));
   app.use(mockInstance.mockData.bind(mockInstance));
   app.use('*.html', htmlCompiler(process.cwd()));
