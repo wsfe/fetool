@@ -15,6 +15,8 @@ import {
 } from '../plugins';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 
+const NO_PROTOCAL_URL = /^\/\/\w+(\.\w+)+/
+
 class Project {
   /**
    * Project 构造函数
@@ -155,6 +157,9 @@ class Project {
   }
 
   _setPublicPath(config, env) {
+    if (NO_PROTOCAL_URL.test(config.output.publicPath)) { // 如果是已经带绝对路径的配置就忽略
+      return;
+    }
     let domain = '';
     if (env) { // 如果指定了环境
       domain = `${this.userConfig.servers[env]['domain']}`;
