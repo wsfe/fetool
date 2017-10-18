@@ -42,9 +42,9 @@ class Project {
 
   /**
    * 
-   * @param {cb: funtion, type: 'base|js|css'} cb，主要是对config进行再加工，type：主要是指定哪一种配置，分为三种，baseConfig,jsConfig,cssConfig
+   * @param {cb: funtion, type: 'base|js|css', port: '端口'} cb，主要是对config进行再加工，type：主要是指定哪一种配置，分为三种，baseConfig,jsConfig,cssConfig
    */
-  getServerCompiler({ cb, type } = {}) {
+  getServerCompiler({ cb, type, port } = {}) {
     let config = {};
     if (this.mode === SINGLE_MODE) {
       config = this.getConfig();
@@ -54,6 +54,7 @@ class Project {
     if (_.isFunction(cb)) {
       config = cb(config);
     }
+    config.output.publicPath = `//localhost:${port}${config.output.publicPath}`
     config.plugins.push(new ProgressPlugin());
     return webpack(config);
   }
@@ -154,7 +155,7 @@ class Project {
   }
 
   _setPublicPath(config, env) {
-    let domain = '//img.chinanetcenter.com';
+    let domain = '';
     if (env) { // 如果指定了环境
       domain = `${this.userConfig.servers[env]['domain']}`;
     } else { // 如果没有指定环境

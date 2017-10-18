@@ -98,7 +98,9 @@ function getMiddleWare(compiler) {
 function singleMode(project, projectName) {
   let middleware = singleModeCache.get(projectName);
   if (!middleware) {
-    let compiler = project.getServerCompiler();
+    let compiler = project.getServerCompiler({
+      port: _args.port
+    });
     middleware = getMiddleWare(compiler);
     singleModeCache.set(projectName, middleware);
   }
@@ -115,10 +117,11 @@ function multiMode(project, projectName, requestUrl, cacheId) {
   if (!middleware) {
     let newConfig;
     let compiler = project.getServerCompiler({
+      port: _args.port,
       type: sysPath.extname(requestUrl).substr(1),
       cb: (config) => {
         newConfig = getMulitModeConfig(config, requestUrl);
-        return newConfig ? newConfig : config;
+        return newConfig || config;
       }
     });
     if (!newConfig) { // 如果配置不存在
