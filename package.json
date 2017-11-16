@@ -51,7 +51,6 @@
     "webpack": "^3.4.1",
     "webpack-bundle-analyzer": "^2.8.3",
     "webpack-dev-middleware": "^1.11.0",
-    "webpack-hot-middleware": "^2.19.1",
     "webpack-merge": "^4.1.0",
     "webpack-sources": "^1.0.1",
     "worker-farm": "^1.5.0"
