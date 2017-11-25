@@ -143,7 +143,7 @@ class Project {
     if (options.min) {
       config.plugins.push(new UglifyJsPlugin({
         parallel: true,
-        cache: sysPath.join(this.cwd, '.cache/uglifyjs')
+        cache: options.cache? sysPath.join(this.cwd, '.cache/uglifyjs'): false
       }));
       config.plugins.push(new UglifyCSSPlugin());
       config.plugins.push(new VersionPlugin(sysPath.join(this.cwd, 'ver'), this.config.entryExtNames));
