@@ -45,8 +45,9 @@ class Project {
   /**
    * 
    * @param {cb: funtion, type: 'base|js|css', port: '端口'} cb，主要是对config进行再加工，type：主要是指定哪一种配置，分为三种，baseConfig,jsConfig,cssConfig
+   * @param options, 启动server的配置
    */
-  getServerCompiler({ cb, type, port } = {}) {
+  getServerCompiler({ cb, type } = {}, options) {
     let config = {};
     if (this.mode === SINGLE_MODE) {
       config = this.getConfig();
@@ -56,7 +57,11 @@ class Project {
     if (_.isFunction(cb)) {
       config = cb(config);
     }
-    config.output.publicPath = `//localhost:${port}${config.output.publicPath}`
+    if (options.https || options.port === 80) {
+      config.output.publicPath = `//localhost${config.output.publicPath}`
+    } else {
+      config.output.publicPath = `//localhost:${port}${config.output.publicPath}`
+    }
     config.plugins.push(new ProgressPlugin());
     return webpack(config);
   }
