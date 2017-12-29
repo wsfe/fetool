@@ -6,6 +6,7 @@ export default class Version {
     this.verFilePath = verFilePath
     this.entryExtNames = entryExtNames
     this.versions = []
+    this.versionsJson = {}
   }
 
   getKey(fileParse) {
@@ -17,6 +18,40 @@ export default class Version {
       }
     })
     return name
+  }
+
+  generateMapping() {
+    return new Promise((resolve, reject) => {
+      fs.appendFile(sysPath.join(this.verFilePath, 'versions.mapping'), this.versions.join('\n') + '\n', (err) => {
+        if (err) {
+          reject(err)
+        }
+        resolve()
+      })
+    })
+  }
+
+  generateJson() {
+    return new Promise((resolve, reject) => {
+      let filePath = sysPath.join(this.verFilePath, 'versions.json')
+      fs.access(filePath, (err) => {
+        if (err) { // 如果不存在
+          fs.outputJson(filePath, this.versionsJson).then(() => {
+            resolve()
+          }).catch(err => {
+            reject(err)
+          })
+        } else {
+          fs.readJson(filePath).then(existedVersions => {
+            return fs.writeJson(filePath, Object.assign(existedVersions, this.versionsJson))
+          }).then(() => {
+            resolve()
+          }).catch(err => {
+            reject(err)
+          })
+        }
+      })
+    })
   }
 
   apply(compiler) {
@@ -32,13 +67,14 @@ export default class Version {
               key = matchInfo[1] + matchInfo[3],
               hash = matchInfo[2]
             this.versions.push(`${key}#${hash}`)
+            this.versionsJson[key] = hash
           }
         })
       })
-      fs.appendFile(sysPath.join(this.verFilePath, 'versions.mapping'), this.versions.join('\n') + '\n', (err) => {
-        if (err) {
-          compilation.errors.push(err)
-        }
+      Promise.all([this.generateMapping(), this.generateJson()]).then(() => {
+        callback()
+      }).catch(err => {
+        compilation.errors.push(err)
         callback()
       })
     })

@@ -44,7 +44,6 @@
     "serve-static": "^1.12.3",
     "shelljs": "^0.7.8",
     "standard": "^10.0.2",
-    "text-table": "^0.2.0",
     "uglifycss": "^0.0.27",
     "uglifyjs-webpack-plugin": "^1.1.1",
     "valid-url": "^1.0.9",

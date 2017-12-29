@@ -1,7 +1,4 @@
 import standard from 'standard';
-// import chalk from 'chalk';
-// import table from 'text-table';
-// import stripAnsi from 'strip-ansi'
 import formatter from 'eslint-friendly-formatter'
 import Project from '../models/project';
 
