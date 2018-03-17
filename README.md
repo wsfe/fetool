@@ -1,3 +1,10 @@
+# 代理格式
+{
+  projectName: {
+    port: xxx
+  }
+}
+
 # ft2.0
 ft2.0是ft1.0的升级版，设计思想是来自[fekit](https://github.com/rinh/fekit)，基本上所有命令的设计都是来自`fekit`，继承了`fekit`的核心优点。ft2.0除了支持多页应用以外，还支持单页应用。从ft1.0迁移到ft2.0的成本很低，只要稍微修改下配置文件就够了，相应的配置说明，请查看下面的配置文档。ft2.0默认内置了`json-loader`,`html-loader`
 

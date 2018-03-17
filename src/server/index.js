@@ -6,10 +6,19 @@ import middlewares from './middlewares';
 
 class Server {
   constructor(options) {
-    this.app = express();
-    this.app.use(favicon(sysPath.join(__dirname, '../../public', 'favicon.png')));
-    middlewares(this.app, options);
-    this.start(options);
+    this.readNamePortMap().then((conf) => {
+      this.app = express();
+      this.app.set('fet', conf)
+      this.app.use(favicon(sysPath.join(__dirname, '../../public', 'favicon.png')));
+      middlewares(this.app, options);
+      this.start(options);
+    }).catch(err => {
+      error (err)
+    })
+  }
+
+  readConf () {
+    return fs.readJson(sysPath.join(process.cwd(), 'fet.conf'))
   }
   /**
    * @description 启动服务器
