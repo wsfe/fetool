@@ -2,23 +2,46 @@ import express from 'express';
 import favicon from 'serve-favicon';
 import http from 'http';
 import https from 'https';
+import proxy from 'http-proxy-middleware'
 import middlewares from './middlewares';
+import { resolve } from 'url';
 
 class Server {
   constructor(options) {
-    this.readNamePortMap().then((conf) => {
+    this.readConf().then((conf) => {
       this.app = express();
       this.app.set('fet', conf)
       this.app.use(favicon(sysPath.join(__dirname, '../../public', 'favicon.png')));
+      this.proxy(this.app, conf)
       middlewares(this.app, options);
       this.start(options);
-    }).catch(err => {
-      error (err)
     })
   }
 
+  proxy (app, conf) {
+    for (let projectName in conf) {
+      let project = conf[projectName]
+      app.use(`/${projectName}`, proxy({
+        target: `http://localhost:${project.port}`,
+        changeOrigin: true
+      }))
+    }
+  }
+
   readConf () {
-    return fs.readJson(sysPath.join(process.cwd(), 'fet.conf'))
+    return new Promise((resolve, reject) => {
+      fs.readJson(sysPath.join(process.cwd(), 'fet.conf')).then(conf => {
+        resolve(conf)
+      }).catch(err => {
+        if (err.code === 'ENOENT') {
+          warn('no fet.conf,please create if need')
+          resolve({})
+        } else {
+          error(err)
+          process.exit(1)
+        }
+      })
+    })
   }
   /**
    * @description 启动服务器
