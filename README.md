@@ -1,12 +1,14 @@
 # 代理格式
+``` json
 {
-  projectName: {
-    port: xxx
+  "projectName": {
+    "port": "8080" // fet server 要代理的webpack server端口
   }
 }
+```
 
-# ft2.0
-ft2.0是ft1.0的升级版，设计思想是来自[fekit](https://github.com/rinh/fekit)，基本上所有命令的设计都是来自`fekit`，继承了`fekit`的核心优点。ft2.0除了支持多页应用以外，还支持单页应用。从ft1.0迁移到ft2.0的成本很低，只要稍微修改下配置文件就够了，相应的配置说明，请查看下面的配置文档。ft2.0默认内置了`json-loader`,`html-loader`
+# fet
+fet是[fekit](https://github.com/rinh/fekit)的升级版，基本上多页应用的设计思想来自`fekit`,核心功能是解决了本地开发，线上调试带来的不变，启用了`fet server`,开发者就能安枕无忧的对应开发，测试，线上线下问题。fet除了支持多页应用外，还支持单页应用。只要是遵循fet规范的任何单页应用，都可以用fet支持。fet默认内置了`json-loader`,`html-loader`,详细配置请看下文。
 
 ## ft2.0解决了如下问题：
 1. 线上源码与本地源码映射关系（本地代理，类似`fiddler`的匹配替换功能），方便调试
