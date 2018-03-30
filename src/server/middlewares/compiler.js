@@ -4,8 +4,7 @@ import _ from 'lodash';
 import LRU from 'lru-cache';
 import { projectService } from '../../services';
 
-const QUERY_REG = /\?.+$/;
-const VER_REG = /@[\d\w]+(?=\.\w+)/;
+const OUTPUT_DIR = 'prd'
 let singleModeCache = LRU({
   max: 5
 }); // 单页应用的缓存，最多存储5个
@@ -152,20 +151,19 @@ export default function (options) {
       outputDir = 'prd';
 
     // 非output.path下的资源不做任何处理
-    if (filePaths[2] !== outputDir) {
+    if (filePaths[2] !== OUTPUT_DIR) {
       next();
       return;
     }
 
     let project = projectService.getDevProject(projectCwd);
 
+    req.url = '/' + filePaths.slice(3).join('/');
     if (project.mode === SINGLE_MODE) {
-      req.url = '/' + filePaths.slice(3).join('/').replace(QUERY_REG, '').replace(VER_REG, '');
       singleMode(project, projectName)(req, res, next);
     }
 
     if (project.mode === MUTLI_MODE) {
-      req.url = '/' + filePaths.slice(3).join('/').replace(QUERY_REG, '').replace(VER_REG, '');
       let requestUrl = req.url.replace('.map', '').slice(1);
       let cacheId = sysPath.join(projectName, requestUrl);
       multiMode(project, projectName, requestUrl, cacheId)(req, res, next);
