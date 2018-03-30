@@ -12,7 +12,7 @@ export default function server(program) {
     .action((options) => {
       options.port = options.port || 80;
       options.watch = options.watch && options.watch != true ? options.watch : 'build';
-      options.config = options.config && options.config !== true ? options.config : sysPath.join(process.cwd(), 'fet.conf')
+      options.config = options.config && options.config !== true ? options.config : sysPath.join(process.cwd(), 'fet.proxy.conf')
       new Server(options)
     });
 };
