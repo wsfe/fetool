@@ -8,11 +8,22 @@ export default function sync(program) {
     .action((env) => {
       env = env ? env : process.env.npm_config_server
       fs.readJson(sysPath.join(process.cwd(), 'package.json'), (err, conf) => {
-        if (!err && conf.servers) {
-          new Sync(conf.servers[env]).sync()
+        const syncConf
+        if (err && err.code !== 'ENOENT') { // 如果是读取文件出错
+          error(err)
+          process.exit(1)
+        }
+        if (!err && conf.servers) { // 如果不在配置里面
+          syncConf = conf.servers[env]
         } else {
           let project = new Project(process.cwd(), ENV.DEV);
-          new Sync(project.userConfig.servers[env]).sync()
+          syncConf = project.userConfig.servers[env]
+        }
+        if (syncConf) {
+          new Sync(syncConf).sync()
+        } else {
+          error(`请查看配置文档，配置相关${env}服务器!`)
+          process.exit(1)
         }
       })
     });
@@ -24,10 +35,6 @@ class Sync {
   }
 
   sync() {
-    if (!this.conf) {
-      error(`请查看配置文档，配置${env}服务器!`);
-      process.exit(1);
-    }
     if (this.conf.user) {
       this.conf.user = `${this.conf.user}@`
     } else {
