@@ -30,11 +30,11 @@ export default function sync(program) {
 };
 
 class Sync {
-  constructor(conf) {
+  constructor (conf) {
     this.conf = conf
   }
 
-  sync() {
+  sync () {
     if (this.conf.user) {
       this.conf.user = `${this.conf.user}@`
     } else {

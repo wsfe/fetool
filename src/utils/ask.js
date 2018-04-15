@@ -32,7 +32,7 @@ module.exports = function ask (prompts, data, done) {
 
 function prompt (data, key, prompt, done) {
   let promptDefault = prompt.default
-  if (typeof prompt.default === 'function') {
+  if (typeof promptDefault === 'function') {
     promptDefault = function () {
       return prompt.default.bind(this)(data)
     }
@@ -56,6 +56,7 @@ function prompt (data, key, prompt, done) {
     } else {
       data[key] = answers[key]
     }
+    console.log(data[key])
     done()
   }).catch(done)
 }
