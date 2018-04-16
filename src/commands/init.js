@@ -16,10 +16,8 @@ const spawn = require('child_process').spawn
 const ask = require('../utils/ask')
 const evaluate = require('../utils/eval')
 const getOptions = require('../utils/options')
+
 const exists = fs.existsSync
-const templatePath = 'wsfe/vue-template#test'
-// const tmpPath = path.join(home, '.fet-templates/vue')
-const tmpPath = path.join(home, 'Documents/git/vue-template')
 
 export default function init (program) {
   program
@@ -51,7 +49,7 @@ export default function init (program) {
           ])
           .then(answers => {
             if (answers.ok) {
-              run()
+              chooseTemplate()
             }
           })
           .catch(err => {
@@ -59,23 +57,53 @@ export default function init (program) {
             process.exit(1)
           })
       } else {
+        chooseTemplate()
+      }
+
+      /**
+       * choose a template: vue/angular/react
+       */
+      function chooseTemplate () {
         run()
+        // inquirer
+        //   .prompt([
+        //     {
+        //       type: 'list',
+        //       message: 'what template do you want?',
+        //       name: 'templateName',
+        //       choices: [
+        //         'vue',
+        //         'angular',
+        //         'react'
+        //       ],
+        //       default: 'vue'
+        //     }
+        //   ])
+        //   .then(answers => {
+        //     run(answers.templateName)
+        //   })
+        //   .catch(err => {
+        //     error(err)
+        //     process.exit(1)
+        //   })
       }
 
       /**
        * download and generator project.
        */
-      function run () {
-        // const spinner = ora('download template...')
-        // spinner.start()
+      function run (type = 'vue') {
+        const templatePath = `wsfe/fet-templates-${type}`
+        const tmpPath = path.join(home, `.fet-templates/${type}`)
+        const spinner = ora('download template...')
+        spinner.start()
         // Remove if local template exists
-        // if (exists(tmpPath)) rm(tmpPath)
-        // download(templatePath, tmpPath, { clone }, err => {
-        //   spinner.stop()
-        //   if (err) {
-        //     error(err)
-        //     process.exit(1)
-        //   }
+        if (exists(tmpPath)) rm(tmpPath)
+        download(templatePath, tmpPath, { clone }, err => {
+          spinner.stop()
+          if (err) {
+            error(err)
+            process.exit(1)
+          }
           new Generate().generate(projectName, tmpPath, to, err => {
             if (err) {
               error(err)
@@ -83,7 +111,7 @@ export default function init (program) {
             }
             success('Generate success')
           })
-        // })
+        })
       }
     })
 }
@@ -122,17 +150,28 @@ class Generate {
       Handlebars.registerHelper(key, opts.helpers[key])
     })
 
+    if (opts.metalsmith && typeof opts.metalsmith.before === 'function') {
+      opts.metalsmith.before(metalsmith, opts)
+    }
+
     metalsmith
       .use(this.askQuestions(opts.prompts))
       .use(this.filterFiles(opts.filters))
       .use(this.renderTemplateFiles(opts.skipInterpolation))
+
+    if (typeof opts.metalsmith === 'function') {
+      opts.metalsmith(metalsmith, opts)
+    } else if (opts.metalsmith && typeof opts.metalsmith.after === 'function') {
+      opts.metalsmith.after(metalsmith, opts)
+    }
+
+    metalsmith
       .clean(true)
       .source('.')
       .destination(dest)
       .build((err, files) => {
         done(err)
         this.sortDependencies(data)
-        console.log(data.lint, data.autoInstall)
         if (data.autoInstall) {
           const cwd = path.join(process.cwd(), data.inPlace ? '' : data.destDirName)
           this.installDependencies(cwd, data.autoInstall)
@@ -141,10 +180,14 @@ class Generate {
             })
             .then(() => {
               success('Project initialization finished!')
+              process.exit()
             })
             .catch(err => {
               error(err)
+              process.exit(1)
             })
+        } else {
+          process.exit()
         }
       })
 
@@ -260,7 +303,7 @@ class Generate {
    * @param {object} data Data from questionnaire
    */
   installDependencies (cwd, executable = 'npm', color) {
-    console.log('Installing project dependencies ...')
+    log('Installing project dependencies ...')
     return this.runCommand(executable, ['install'], {
       cwd
     })
@@ -273,7 +316,7 @@ class Generate {
    */
   runLintFix (cwd, data, color) {
     if (data.lint) {
-      console.log('Running eslint --fix to comply with chosen preset rules...')
+      log('Running eslint --fix to comply with chosen preset rules...')
       const args =
         data.autoInstall === 'npm'
           ? ['run', 'lint', '--', '--fix']
