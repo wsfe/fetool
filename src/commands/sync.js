@@ -8,7 +8,7 @@ export default function sync(program) {
     .action((env) => {
       env = env ? env : process.env.npm_config_server
       fs.readJson(sysPath.join(process.cwd(), 'package.json'), (err, conf) => {
-        const syncConf
+        let syncConf
         if (err && err.code !== 'ENOENT') { // 如果是读取文件出错
           error(err)
           process.exit(1)
