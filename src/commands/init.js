@@ -9,9 +9,14 @@ const rm = require('rimraf').sync
 const Generate = require('../models/generate')
 
 export default function init (program) {
+  /**
+   * Usage.
+   */
   program
     .command('init [projectName]')
     .description('generator a new project from template')
+    .option('-t, --type [value]', 'template type')
+    .option('-m, --multi', 'a multi-page application')
     .option('-c, --clone', 'use git clone')
     .action((rawName, cmd) => {
       /**
@@ -20,6 +25,8 @@ export default function init (program) {
       const inPlace = !rawName || rawName === '.'
       const projectName = inPlace ? path.relative('../', process.cwd()) : rawName
       const to = path.resolve(projectName || '.')
+      const type = cmd.type
+      const multi = cmd.multi
       const clone = cmd.clone
 
       /**
@@ -38,7 +45,7 @@ export default function init (program) {
           ])
           .then(answers => {
             if (answers.ok) {
-              chooseTemplate()
+              run(type, multi)
             }
           })
           .catch(err => {
@@ -46,41 +53,15 @@ export default function init (program) {
             process.exit(1)
           })
       } else {
-        chooseTemplate()
-      }
-
-      /**
-       * choose a template: vue/angular/react
-       */
-      function chooseTemplate () {
-        run()
-        // inquirer
-        //   .prompt([
-        //     {
-        //       type: 'list',
-        //       message: 'what template do you want?',
-        //       name: 'templateName',
-        //       choices: [
-        //         'vue',
-        //         'angular',
-        //         'react'
-        //       ],
-        //       default: 'vue'
-        //     }
-        //   ])
-        //   .then(answers => {
-        //     run(answers.templateName)
-        //   })
-        //   .catch(err => {
-        //     error(err)
-        //     process.exit(1)
-        //   })
+        run(type, multi)
       }
 
       /**
        * download and generator project.
        */
-      function run (type = 'vue') {
+      function run (type = 'vue', multi) {
+        if (multi) type = 'multi'
+
         const templatePath = `wsfe/fet-templates-${type}`
         const tmpPath = path.join(home, `.fet-templates/${type}`)
         const spinner = ora('download template...')
