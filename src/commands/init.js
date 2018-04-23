@@ -1,3 +1,5 @@
+import Generate from '../models/generate'
+
 const path = require('path')
 const exists = require('fs').existsSync
 const download = require('download-git-repo')
@@ -5,8 +7,6 @@ const ora = require('ora')
 const home = require('user-home')
 const inquirer = require('inquirer')
 const rm = require('rimraf').sync
-
-const Generate = require('../models/generate')
 
 export default function init (program) {
   /**

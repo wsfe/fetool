@@ -185,6 +185,7 @@ class Generate {
 
   sortObject (object) {
     // Based on https://github.com/yarnpkg/yarn/blob/v1.3.2/src/config.js#L79-L85
+    if (!object) return
     const sortedObject = {}
     Object.keys(object)
       .sort()
