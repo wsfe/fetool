@@ -12,7 +12,8 @@ class Config {
       css: ['.css', '.scss', '.sass', '.less'],
       js: ['.js', '.jsx', '.vue']
     };
-    let projectName = process.platform === 'win32' ? cwd.split('\\').pop(): cwd.split('/').pop();
+    // let projectName = process.platform === 'win32' ? cwd.split('\\').pop(): cwd.split('/').pop();
+    let projectName = require(sysPath.join(cwd, 'package.json')).name
     this.baseConfig = {
       context: sysPath.join(cwd, 'src'),
       entry: {},
