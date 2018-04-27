@@ -1,14 +1,5 @@
-# 代理格式
-``` json
-{
-  "projectName": {
-    "port": "8080" // fet server 要代理的webpack server端口
-  }
-}
-```
-
 # fet
-fet是[fekit](https://github.com/rinh/fekit)的升级版，基本上多页应用的设计思想来自`fekit`,核心功能是解决了本地开发，线上调试带来的不变，启用了`fet server`,开发者就能安枕无忧的对应开发，测试，线上线下问题。fet除了支持多页应用外，还支持单页应用。只要是遵循fet规范的任何单页应用，都可以用fet支持。fet默认内置了`json-loader`,`html-loader`,详细配置请看下文。
+fet是为了解决快速开发，调试，上线用的前端开发工具，基于webpack开发。核心功能是解决了本地开发，线上调试带来的不便，启用了`fet server`,开发者就能安枕无忧的对应开发，测试，线上线下问题，我们在浏览器看到的代码，都是同一套源码，可以方便解决问题。fet除了支持多页应用外，还支持单页应用。只要是遵循fet规范的任何单页应用，都可以用fet支持。fet默认内置了`json-loader`,`html-loader`,详细配置请看下文。
 
 ## fet解决了如下问题：
 1. 线上源码与本地源码映射关系（本地代理，类似`fiddler`的匹配替换功能），方便调试
@@ -17,12 +8,10 @@ fet是[fekit](https://github.com/rinh/fekit)的升级版，基本上多页应用
 
 ## fet设计核心说明
 目前fet支持两种模式：多页面和单页面模式,核心引擎是webpack.单页模式采用的是代理的方式，fet只做转发。多页应用模式，fet支持编译，打包。
-
 ### 单页模式
-单页模式，需要在`fet server`运行目录下面新增[vue的脚手架](https://github.com/wsfe/vue-boilerplate)，多页面模式提倡，样式表独立出来，然后js里面的样式不被提取出来。大家可以根据自己的需要来选择想要的模式。
-
+fet对单页应用采用的是代理的方式进行支持，也就是说只要单页应用遵循fet的规范，可以让开发者随便配置。fet目前提供了脚手架，支持生成`vue`的单页模板，以及多页应用模板。
 ### 多页模式
-项目当中避免不了多页应用，尤其对于2b系统，几十个页面，有时候多达200个页面（这种系统设计本身就不合理）。webpack如果要配置多页应用，还是挺麻烦的，而且编译的时候很慢。ft2.0进行了特殊处理，让开发者在配置多页应用的时候简单方便，同时采用缓存式中间件，以及多进程编译，提升编译速度。
+项目当中避免不了多页应用，尤其对于2b系统，几十个页面，有时候多达200个页面（这种系统设计本身就不合理）。webpack如果要配置多页应用，还是挺麻烦的，而且编译的时候很慢。f`et进`行了特殊处理，让开发者在配置多页应用的时候简单方便，同时采用缓存式中间件，以及多进程编译，提升编译速度。
 
 ## 安装
 npm 安装方式安装
@@ -38,35 +27,19 @@ yarn global add fet-cli
 请安装fet之后，在命令行运行`fet`查看命令说明，如果对某个命令感兴趣请运行`fet commandName -h`查看。
 
 ### server
-用于启动服务器，支持多项目并行开发。（ps：别人需要多个webpack server，我这边只需要一个fet server）,默认开启mock服务。
+用于启动服务器，支持多项目并行开发。
 * `-p`:设置服务端口，默认是80
 * `-w`:设置需要监听的文件，默认是监听`ft.config.js`以及`build`文件夹。如果要新增可以用逗号隔开，例如：'src/home,base'。
 * `-s`:开启HTTPS服务，如果没有配置全局的证书，那么会启用默认证书，默认证书是没有经过认证的，在目前的浏览器，会引起不可预知的错误。因此，建议不要用默认证书。如果需要配置经过认证的证书，请执行`fet config https-key <path-to-your-key>`，以及`fet config https-crt <path-to-your-crt>`。
 * `-v`:提示server是否显示详细的编译信息，默认不开启。
+* `-c`:单页应用的代理配置路径，默认是服务器启动目录下的fet.proxy.conf
 
-#### server mock
-server默认开启mock服务，支持的方式是在每个html页面下创建前缀一样，后缀加一个mock的js文件。例如：一个html文件叫abc.html那么如果需要mock，就需要创建一个abc.mock.js文件。mock文件的格式如下：
-```
-module.exports = [
-  {
-    url: '请求的url地址',
-    method: 'get|post|put等，默认get',
-    //response: 'response支持function或者url，如果是url的话mock server会转发相应的请求到response指定的接口',
-    response: function(req) {
-      // 返回mockjs格式的json数据
-      return {
-        "name|1-10": "★"
-      }
-    }
-  }
-]
-```
-
+单页应用如果要用上`fet server`，必须在`fet server`的执行目录下面新建代理文件fet.proxy.conf，代理格式请看下面的[代理文件配置](https://github.com/angrytoro/fetool#代理文件配置)
 ### pack
 对代码进行打包，但是不进行编译，可为不同的环境打包代码。
 * `-e`:设置要打包的环境，对应的值，是配置文件里面`servers`这个字段对应的配置。可能由于一个项目同时有多个迭代，因此会有多个开发机以及其对应的域名，因此经常需要配置这个环境变量。
 * `-m`:打包并压缩代码，与执行`fet build`效果是一样的
-* `-c`:编译特殊文件，默认编译html。ft2.0支持`include`标签，用户引入公共部分代码，类似`jsp`里面的`include`。
+* `-c`:编译特殊文件，默认编译html。`fet`支持`include`标签，用户引入公共部分代码，类似`jsp`里面的`include`。
 
 ### build
 对代码进行打包并且压缩，同时支持打包分析，给使用者提供代码优化思路。
@@ -80,7 +53,7 @@ module.exports = [
 ### config [key] [value]
 配置全局变量，目前提供的全局变量配置有如下：
 * `https-key`&`https-crt`:这两个配置主要是用于`server`开启HTTPS。
-* `user`: 配置`sync`命令中默认的用户名。只要配置了这个，对项目执行`sync`命令，ft2.0首先会去匹配`servers`这个配置字段里面对应服务器的`user`字段，如果没有设置，直接使用全局的配置。
+* `user`: 配置`sync`命令中默认的用户名。只要配置了这个，对项目执行`sync`命令，`fet`首先会去匹配`servers`这个配置字段里面对应服务器的`user`字段，如果没有设置，直接使用全局的配置。
 * `domain`:配置默认的域名。在`pack`和`build`的时候会用到。主要是用于设置`publicPath`的时候要用。
 
 ### lint
@@ -119,7 +92,7 @@ module.exports = [
       sudo: false
     }
   },
-  entryExtNames: { // 告诉ft2.0哪些后缀是属于js或者css，ft才能根据这些来选择编译配置
+  entryExtNames: { // 告诉`fet`哪些后缀是属于js或者css，ft才能根据这些来选择编译配置
     css: ['.css', '.scss', '.sass', '.less'],
     js: ['.js', '.jsx', '.vue']
   },
@@ -139,8 +112,14 @@ module.exports = [
   }
 }
 ```
+# 代理文件配置
+``` json
+{
+  "projectName": { // 项目名称要和package.json的name一样
+    "port": "8080" // fet server 要代理的webpack server端口
+  }
+}
+```
 
-## todo list
-1. 修复重复打包问题，提取出公共包
-2. 完善`init`命令(当前命令还不太完善，请先不使用)
-3. 新增热更新功能
+## 其他
+如果需要用到数据模拟，可以使用[yapi](https://github.com/YMFE/yapi)或者[easy-mock](https://github.com/easy-mock/easy-mock)，如果需要更复杂的数据模拟，可以使用[mockajax](https://github.com/angrytoro/mockajax)
