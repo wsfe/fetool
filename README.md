@@ -59,6 +59,16 @@ yarn global add fet-cli
 ### lint
 基于[standard](https://github.com/standard/standard)的代码检测命令。对应配置文件里面的`lint`字段。
 
+### init
+>生成项目脚手架
+
+```cmd
+fet init [projectName]
+```
+* `-t`:设置模板类型，默认是vue
+* `-m`:下载多页面模板，默认是否，设置后-type设置的类型无效。
+* `-c`:开启clone方式下载模板
+
 ## 配置说明
 
 ```
