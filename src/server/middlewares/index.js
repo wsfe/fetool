@@ -5,7 +5,6 @@ import httpProxy from 'http-proxy-middleware'
 import compiler from './compiler';
 import logger from './logger';
 import htmlCompiler from './htmlCompiler';
-import Mock from './mock'
 import cors from './cors'
 import webpackStatic from './webpackStatic'
 import hashReplacer from './hashReplacer'
@@ -22,14 +21,11 @@ function proxy(app) {
 }
 
 export default function initMiddlewares(app, options, conf) {
-  let mockInstance = new Mock(process.cwd());
   app.use(logger);
   app.use(hashReplacer)
   proxy(app)
   app.use(/.*\.(html|eot|ttf|woff|svg|json)/, cors)
   app.use(webpackStatic)
-  app.use(mockInstance.loadRules.bind(mockInstance));
-  app.use(mockInstance.mockData.bind(mockInstance));
   app.use('*.html', htmlCompiler(process.cwd()));
   app.use(serveIndex(process.cwd()));
   app.use(serveStatic(process.cwd(), {
