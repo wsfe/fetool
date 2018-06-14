@@ -1,6 +1,6 @@
 {
   "name": "fet-cli",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "基于webpack的构建工具，解决开发时多项目时需要同时启动多个server的情况",
   "bin": {
     "fet": "bin/fet"

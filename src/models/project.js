@@ -20,8 +20,8 @@ const NO_PROTOCAL_URL = /^\/\/\w+(\.\w+)+/
 class Project {
   /**
    * Project 构造函数
-   * @param {当前的工作目录} cwd 
-   * @param {运行环境，'development或者production'} env 
+   * @param {当前的工作目录} cwd
+   * @param {运行环境，'development或者production'} env
    */
   constructor(cwd, env) {
     this.cwd = cwd;
@@ -43,7 +43,7 @@ class Project {
   }
 
   /**
-   * 
+   *
    * @param {cb: funtion, type: 'base|js|css', port: '端口'} cb，主要是对config进行再加工，type：主要是指定哪一种配置，分为三种，baseConfig,jsConfig,cssConfig
    * @param options, 启动server的配置
    */
@@ -60,7 +60,7 @@ class Project {
     if (options.https || options.port === 80) {
       config.output.publicPath = `//localhost${config.output.publicPath}`
     } else {
-      config.output.publicPath = `//localhost:${port}${config.output.publicPath}`
+      config.output.publicPath = `//localhost:${options.port}${config.output.publicPath}`
     }
     config.plugins.push(new ProgressPlugin());
     return webpack(config);

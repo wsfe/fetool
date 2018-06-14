@@ -8,6 +8,7 @@ import htmlCompiler from './htmlCompiler';
 import cors from './cors'
 import webpackStatic from './webpackStatic'
 import hashReplacer from './hashReplacer'
+import proxyConnection from './proxyConnection'
 
 function proxy(app) {
   const conf = app.get('fet');
@@ -22,6 +23,7 @@ function proxy(app) {
 
 export default function initMiddlewares(app, options, conf) {
   app.use(logger);
+  app.use(proxyConnection)
   app.use(hashReplacer)
   proxy(app)
   app.use(/.*\.(html|eot|ttf|woff|svg|json)/, cors)
