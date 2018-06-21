@@ -102,6 +102,9 @@ class Project {
       let config = this.getConfig();
       outputPath = config.output.path;
       this._setPackConfig(config, options);
+      if (options.analyze) { // 是否启用分析
+        config.plugins.push(new BundleAnalyzerPlugin());
+      }
       this._setHtmlComplierPlugin(config, options);
       this._setPublicPath(config, options.env);
       fs.removeSync(outputPath);
@@ -118,6 +121,9 @@ class Project {
         configs.push(cssConfig);
       }
       this._setPackConfig(jsConfig, options);
+      if (options.analyze) { // 是否启用分析
+        jsConfig.plugins.push(new BundleAnalyzerPlugin());
+      }
       this._setHtmlComplierPlugin(jsConfig, options);
       this._setPublicPath(jsConfig, options.env);
       fs.removeSync(outputPath); // cssConfig和jsConfig的out.path是一样的，所以只需要删除一次就行。
@@ -152,9 +158,6 @@ class Project {
       }));
       config.plugins.push(new UglifyCSSPlugin());
       config.plugins.push(new VersionPlugin(sysPath.join(this.cwd, 'ver'), this.config.entryExtNames));
-    }
-    if (options.analyze) { // 是否启用分析
-      config.plugins.push(new BundleAnalyzerPlugin());
     }
   }
 
