@@ -5,6 +5,7 @@ import VersionPlugin from './version'
 import CssIgnoreJSPlugin from './cssIgnoreJS'
 import CompilerLoggerPlugin from './compilerLogger'
 import ExtTemplatePathPlugin from './extTemplatePath'
+import ReplaceCssHashPlugin from './replaceCssHash'
 
 export {
   ProgressPlugin,
@@ -13,5 +14,6 @@ export {
   VersionPlugin,
   CssIgnoreJSPlugin,
   CompilerLoggerPlugin,
-  ExtTemplatePathPlugin
+  ExtTemplatePathPlugin,
+  ReplaceCssHashPlugin
 }

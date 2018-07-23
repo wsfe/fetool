@@ -10,7 +10,8 @@ import {
   HtmlCompilerPlugin,
   VersionPlugin,
   CssIgnoreJSPlugin,
-  CompilerLoggerPlugin
+  CompilerLoggerPlugin,
+  ReplaceCssHashPlugin
 } from '../plugins';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import UglifyJsPlugin from 'uglifyjs-webpack-plugin';
@@ -115,6 +116,9 @@ class Project {
       outputPath = jsConfig.output.path;
       configs.push(jsConfig); // 默认会有js配置
       if (!_.isEmpty(cssConfig.entry)) {
+        if (options.min) {
+          cssConfig.plugins.push(new ReplaceCssHashPlugin())
+        }
         cssConfig.plugins.push(new CssIgnoreJSPlugin());
         this._setPackConfig(cssConfig, options);
         this._setPublicPath(cssConfig, options.env);

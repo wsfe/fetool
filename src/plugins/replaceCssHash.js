@@ -40,6 +40,7 @@ class ReplaceCssHash {
         return result
       }, {})
       compilation.assets = assets
+      callback()
     })
   }
 }
