@@ -10,7 +10,7 @@ class UglifyCSS {
         chunk.files.forEach((filename) => {
           if (sysPath.extname(filename) === '.css') {
             let file = compilation.assets[filename];
-            let code = uglifycss.processString(compilation.assets[filename].source())
+            let code = uglifycss.processString(file.source())
             compilation.assets[filename] = new RawSource(code)
           }
         })

@@ -2,7 +2,6 @@ import webpack from 'webpack';
 import _ from 'lodash';
 import shell from 'shelljs';
 import mkdirp from 'mkdirp';
-import SingleConfig from './single.config';
 import MutliConfig from './mutli.config';
 import {
   ProgressPlugin,
@@ -30,12 +29,7 @@ class Project {
     this.configFile = sysPath.resolve(this.cwd, 'ft.config');
     let userConfig = this.getUserConfig(this.configFile);
     this.userConfig = userConfig;
-    this.mode = userConfig.mode || MUTLI_MODE;
-    if (this.mode === SINGLE_MODE) {
-      this.config = new SingleConfig(this);
-    } else if (this.mode === MUTLI_MODE) {
-      this.config = new MutliConfig(this);
-    }
+    this.config = new MutliConfig(this);
   }
 
   getUserConfig(module) {
@@ -49,12 +43,7 @@ class Project {
    * @param options, 启动server的配置
    */
   getServerCompiler({ cb, type } = {}, options) {
-    let config = {};
-    if (this.mode === SINGLE_MODE) {
-      config = this.getConfig();
-    } else {
-      config = this.getConfig(type);
-    }
+    let config = this.getConfig(type);
     if (_.isFunction(cb)) {
       config = cb(config);
     }
@@ -99,39 +88,23 @@ class Project {
   _getWebpackConfigs(options) {
     let outputPath,
       configs = [];
-    if (this.mode === SINGLE_MODE) { // 如果是单页模式
-      let config = this.getConfig();
-      outputPath = config.output.path;
-      this._setPackConfig(config, options);
-      if (options.analyze) { // 是否启用分析
-        config.plugins.push(new BundleAnalyzerPlugin());
-      }
-      this._setHtmlComplierPlugin(config, options);
-      this._setPublicPath(config, options.env);
-      fs.removeSync(outputPath);
-      configs.push(config);
-    } else { // 如果是多页模式
-      let cssConfig = this.getConfig('css'),
-        jsConfig = this.getConfig('js');
-      outputPath = jsConfig.output.path;
-      configs.push(jsConfig); // 默认会有js配置
-      if (!_.isEmpty(cssConfig.entry)) {
-        if (options.min) {
-          cssConfig.plugins.push(new ReplaceCssHashPlugin())
-        }
-        cssConfig.plugins.push(new CssIgnoreJSPlugin());
-        this._setPackConfig(cssConfig, options);
-        this._setPublicPath(cssConfig, options.env);
-        configs.push(cssConfig);
-      }
-      this._setPackConfig(jsConfig, options);
-      if (options.analyze) { // 是否启用分析
-        jsConfig.plugins.push(new BundleAnalyzerPlugin());
-      }
-      this._setHtmlComplierPlugin(jsConfig, options);
-      this._setPublicPath(jsConfig, options.env);
-      fs.removeSync(outputPath); // cssConfig和jsConfig的out.path是一样的，所以只需要删除一次就行。
+    let cssConfig = this.getConfig('css'),
+      jsConfig = this.getConfig('js');
+    outputPath = jsConfig.output.path;
+    configs.push(jsConfig); // 默认会有js配置
+    if (!_.isEmpty(cssConfig.entry)) { // 如果cssConfig有配置
+      this._setCssPackConfig(cssConfig, options)
+      this._setPublicPath(cssConfig, options.env)
+      configs.push(cssConfig);
     }
+
+    this._setJsPackConfig(jsConfig, options)
+    if (options.analyze) { // 是否启用分析
+      jsConfig.plugins.push(new BundleAnalyzerPlugin());
+    }
+    this._setHtmlComplierPlugin(jsConfig, options);
+    this._setPublicPath(jsConfig, options.env);
+    fs.removeSync(outputPath); // cssConfig和jsConfig的out.path是一样的，所以只需要删除一次就行。
     this._clearVersion();
     return configs;
   }
@@ -147,11 +120,21 @@ class Project {
     mkdirp.sync(verPath);
   }
 
-  _setPackConfig(config, options) {
+  _setCssPackConfig(config, options) {
     config.devtool = '';
-    // if (options.min) {
-    //   config.devtool = '';
-    // }
+    config.plugins.push(new CssIgnoreJSPlugin())
+    config.plugins.push(new ProgressPlugin())
+    config.plugins.push(new webpack.optimize.ModuleConcatenationPlugin())
+    config.plugins.push(new CompilerLoggerPlugin())
+    if (options.min) {
+      config.plugins.push(new ReplaceCssHashPlugin())
+      config.plugins.push(new UglifyCSSPlugin())
+      config.plugins.push(new VersionPlugin(sysPath.join(this.cwd, 'ver'), this.config.entryExtNames));
+    }
+  }
+
+  _setJsPackConfig(config, options) {
+    config.devtool = '';
     config.plugins.push(new ProgressPlugin());
     config.plugins.push(new webpack.optimize.ModuleConcatenationPlugin());
     config.plugins.push(new CompilerLoggerPlugin());
@@ -159,8 +142,7 @@ class Project {
       config.plugins.push(new UglifyJsPlugin({
         parallel: true,
         cache: options.cache? sysPath.join(this.cwd, '.cache/uglifyjs'): false
-      }));
-      config.plugins.push(new UglifyCSSPlugin());
+      }))
       config.plugins.push(new VersionPlugin(sysPath.join(this.cwd, 'ver'), this.config.entryExtNames));
     }
   }
@@ -173,7 +155,7 @@ class Project {
 
   _setPublicPath(config, env) {
     if (NO_PROTOCAL_URL.test(config.output.publicPath)) { // 如果是已经带绝对路径的配置就忽略
-      return;
+      return
     }
     let domain = '';
     if (env) { // 如果指定了环境

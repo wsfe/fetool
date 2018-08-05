@@ -22,7 +22,7 @@ class Server {
         resolve(conf)
       }).catch(err => {
         if (err.code === 'ENOENT') {
-          warn('no fet.conf,please create if need')
+          warn('no fet.proxy.conf,please create if need')
           resolve({})
         } else {
           error(err)

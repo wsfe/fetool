@@ -1,5 +1,6 @@
 import Config from './config';
 import ExtractTextPlugin from 'extract-text-webpack-plugin';
+import webpack from 'webpack'
 import _ from 'lodash';
 
 class MutliConfig extends Config {
@@ -26,7 +27,7 @@ class MutliConfig extends Config {
 
   setWebpackConfig(webpackConfig = {}) {
     if (typeof webpackConfig === 'function') {
-      let result = webpackConfig.call(this, this.jsConfig, this.cssConfig, {env: this.NODE_ENV, plugins: { ExtractTextPlugin }}, this);
+      let result = webpackConfig.call(this, this.jsConfig, this.cssConfig, {env: this.NODE_ENV, plugins: { ExtractTextPlugin }, webpack}, this);
       if (result.jsConfig) {
         this.jsConfig = result.jsConfig;
       } else {

@@ -1,13 +1,9 @@
 import webpackDevMiddleware from 'webpack-dev-middleware';
 import chokidar from 'chokidar';
-import _ from 'lodash';
 import LRU from 'lru-cache';
 import { projectService } from '../../services';
 
 const OUTPUT_DIR = 'prd'
-let singleModeCache = LRU({
-  max: 5
-}); // 单页应用的缓存，最多存储5个
 let multiModeCache = LRU({
   max: 20,
   maxAge: 1000 * 60 * 60 * 24 * 3 // 超过3天就清除缓存
@@ -20,15 +16,11 @@ function watchConfig(projectName, paths, projectCwd) {
   if (!watchCache[projectName]) {
     let watcher = chokidar.watch(paths);
     watcher.on('change', () => {
-      if (singleModeCache.has(projectName)) {
-        singleModeCache.del(projectName);
-      } else {
-        multiModeCache.forEach((value, key, cache) => {
-          if (key.indexOf(projectName) === 0 && /[\/\\]/.test(key.substr(projectName.length, 1))) {
-            cache.del(key);
-          }
-        });
-      }
+      multiModeCache.forEach((value, key, cache) => {
+        if (key.indexOf(projectName) === 0 && /[\/\\]/.test(key.substr(projectName.length, 1))) {
+          cache.del(key);
+        }
+      });
       projectService.deleteDevProject(projectCwd);
     });
     watchCache[projectName] = watcher;
@@ -90,21 +82,6 @@ function getMiddleWare(compiler) {
 }
 
 /**
- * 单页模式的编译
- * @param {Project对象} project 
- * @param {project名字} projectName 
- */
-function singleMode(project, projectName) {
-  let middleware = singleModeCache.get(projectName);
-  if (!middleware) {
-    let compiler = project.getServerCompiler({}, _args);
-    middleware = getMiddleWare(compiler);
-    singleModeCache.set(projectName, middleware);
-  }
-  return middleware;
-}
-
-/**
  * 
  * @param {Project对象} project 
  * @param {project名字} projectName 
@@ -147,8 +124,7 @@ export default function (options) {
     let url = req.url, // url == '/projectname/prd/..../xxx@hash值.js|css';
       filePaths = url.split('/'),
       projectName = filePaths[1], // 项目名称
-      projectCwd = sysPath.join(process.cwd(), projectName), // 项目的绝对路径
-      outputDir = 'prd';
+      projectCwd = sysPath.join(process.cwd(), projectName) // 项目的绝对路径
 
     // 非output.path下的资源不做任何处理
     if (filePaths[2] !== OUTPUT_DIR) {
@@ -158,16 +134,11 @@ export default function (options) {
 
     let project = projectService.getDevProject(projectCwd);
 
-    req.url = '/' + filePaths.slice(3).join('/');
-    if (project.mode === SINGLE_MODE) {
-      singleMode(project, projectName)(req, res, next);
-    }
+    req.url = '/' + filePaths.slice(3).join('/')
 
-    if (project.mode === MUTLI_MODE) {
-      let requestUrl = req.url.replace('.map', '').slice(1);
-      let cacheId = sysPath.join(projectName, requestUrl);
-      multiMode(project, projectName, requestUrl, cacheId)(req, res, next);
-    }
+    let requestUrl = req.url.replace('.map', '').slice(1);
+    let cacheId = sysPath.join(projectName, requestUrl);
+    multiMode(project, projectName, requestUrl, cacheId)(req, res, next);
 
     let watchPaths = getWatchPaths(options.watch, projectCwd);
     watchPaths.push(project.configFile + '.js')

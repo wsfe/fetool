@@ -69,21 +69,18 @@ class Config {
         path: './prd/',
         filename: '[noextname][ext]',
         chunkFilename: '[id].chunk.js',
-        // publicPath: '//' + sysPath.join('img.chinanetcenter.com', projectName, 'prd/')
         publicPath: `/${projectName}/prd/`
       },
       [ENV.DEV]: {
         path: './dev/',
         filename: '[noextname]@dev[ext]',
         chunkFilename: '[id].chunk@dev.js',
-        // publicPath: '//' + sysPath.join('img.chinanetcenter.com', projectName, 'dev/')
         publicPath: `/${projectName}/dev/`
       },
       [ENV.PRD]: {
         path: './prd/',
         filename: '[noextname]@[chunkhash][ext]',
         chunkFilename: '[id].chunk@[chunkhash].js',
-        // publicPath: '//' + sysPath.join('img.chinanetcenter.com', projectName, 'prd/')
         publicPath: `/${projectName}/prd/`        
       }
     }[env];

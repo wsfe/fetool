@@ -1,4 +1,3 @@
-import express from 'express';
 import serveStatic from 'serve-static';
 import serveIndex from 'serve-index';
 import httpProxy from 'http-proxy-middleware'
