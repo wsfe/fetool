@@ -133,3 +133,8 @@ fet init [projectName]
 
 ## 其他
 如果需要用到数据模拟，可以使用[yapi](https://github.com/YMFE/yapi)或者[easy-mock](https://github.com/easy-mock/easy-mock)，如果需要更复杂的数据模拟，可以使用[mockajax](https://github.com/angrytoro/mockajax)
+
+
+# TODO
+[] 添加自动化测试
+[] 将es6改成typescript
