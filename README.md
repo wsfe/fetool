@@ -73,7 +73,6 @@ fet init [projectName]
 
 ```
 {
-  mode: 'multi',  // 默认是多页面的应用，单页应用选择填写single。
   lint: { // 基于standard的
     cwd: 'src/js', // 选择需要校验的文件路径，默认是src
     opts: {
@@ -87,16 +86,16 @@ fet init [projectName]
   },
   servers: { // 配置同步到哪台机器
     dev1: {
-      host: 10.8.203.61,
-      domain: '//dev1.wangsu.com',
+      host: '127.0.0.1',
+      domain: '//dev1.example.com',
       port: 63501,
       local: './', // 默认当前目录
       path: '/usr/local/src/abc', //服务器端要存放的地址
       sudo: false
     },
     dev2: {
-      host: 10.8.203.190,
-      domain: '//beta1.wangsu.com',
+      host: '127.0.0.1',
+      domain: '//beta1.example.com',
       port: 63501,
       path: '/usr/local/src/dec',
       sudo: false
