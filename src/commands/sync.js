@@ -2,30 +2,42 @@ import _ from 'lodash';
 import shell from 'shelljs';
 import Project from '../models/project';
 
+function getConfigFile (files) {
+  let file = files.find(file => {
+    return fs.existsSync(sysPath.join(process.cwd(), file))
+  })
+  return file ? sysPath.join(process.cwd(), file) : false
+}
+const errorMessage = function(env) {
+  return `请查看配置文档，配置相关${env}服务器!`
+}
+
 export default function sync(program) {
   program.command('sync <env>') // 同步到名字为env的开发环境
     .description('同步到<env>机器')
     .action((env) => {
       env = env ? env : process.env.npm_config_server
-      fs.readJson(sysPath.join(process.cwd(), 'package.json'), (err, conf) => {
-        let syncConf
-        if (err && err.code !== 'ENOENT') { // 如果是读取文件出错
+      let syncConf = {}
+      let configPath = getConfigFile(['fet.config', 'ft.config'])
+      if (configPath) {
+        delete require.cache[require.resolve(configPath)]
+        let userConfig = require(configPath)
+        if (!userConfig.servers || !(syncConf = userConfig.servers[env])) {
+          error(errorMessage(env))
+          process.exit(1)
+        }
+      } else {
+        try {
+          let packageJson = fs.readJsonSync(sysPath.join(process.cwd(), 'package.json'))
+          if (!packageJson.servers || !(syncConf = packageJson.servers[env])) {
+            throw(new Error(errorMessage(env)))
+          }
+        } catch(err) {
           error(err)
           process.exit(1)
         }
-        if (!err && conf.servers) { // 如果不在配置里面
-          syncConf = conf.servers[env]
-        } else {
-          let project = new Project(process.cwd(), ENV.DEV);
-          syncConf = project.userConfig.servers[env]
-        }
-        if (syncConf) {
-          new Sync(syncConf).sync()
-        } else {
-          error(`请查看配置文档，配置相关${env}服务器!`)
-          process.exit(1)
-        }
-      })
+      }
+      new Sync(syncConf).sync()
     });
 };
 
