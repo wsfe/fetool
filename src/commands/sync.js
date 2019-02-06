@@ -55,6 +55,7 @@ class Sync {
     }
     this.conf.local = this.conf.local || './';
 
+    /* exclude */
     let default_exclude = ['.idea', '.svn', '.git', '.gitignore', 'yarn.lock', 'ft.config.js', '.DS_Store', 'node_modules', 'src', 'loc', 'env', 'dll'];
     if (this.conf['exclude'] && this.conf['exclude'].length > 0) {
       default_exclude = default_exclude.concat(this.conf.exclude);
@@ -63,6 +64,16 @@ class Sync {
     default_exclude = default_exclude.map((item) => {
       return `--exclude=${item}`;
     }).join(' ');
+
+    /* include */
+    let default_include = []
+    if (this.conf['include'] && this.conf['include'].length > 0) {
+      default_include = default_include.concat(this.conf.include)
+      default_include = _.uniq(default_include)
+    }
+    default_include = default_include.map((item) => {
+      return `--include=${item}`
+    }).join(' ')
 
     let _args = [
       '-rzcvp',
