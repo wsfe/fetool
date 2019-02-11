@@ -1,6 +1,5 @@
 import _ from 'lodash';
 import shell from 'shelljs';
-import Project from '../models/project';
 
 function getConfigFile (files) {
   let file = files.find(file => {
@@ -18,7 +17,7 @@ export default function sync(program) {
     .action((env) => {
       env = env ? env : process.env.npm_config_server
       let syncConf = {}
-      let configPath = getConfigFile(['fet.config', 'ft.config'])
+      let configPath = getConfigFile(['fet.config.js', 'ft.config.js'])
       if (configPath) {
         delete require.cache[require.resolve(configPath)]
         let userConfig = require(configPath)
@@ -56,7 +55,7 @@ class Sync {
     this.conf.local = this.conf.local || './';
 
     /* exclude */
-    let default_exclude = ['.idea', '.svn', '.git', '.gitignore', 'yarn.lock', 'ft.config.js', '.DS_Store', 'node_modules', 'src', 'loc', 'env', 'dll'];
+    let default_exclude = ['/*'];
     if (this.conf['exclude'] && this.conf['exclude'].length > 0) {
       default_exclude = default_exclude.concat(this.conf.exclude);
       default_exclude = _.uniq(default_exclude);
@@ -81,6 +80,7 @@ class Sync {
       "--rsync-path='" + (this.conf.sudo? "sudo ": '') + "rsync'",
       this.conf.local,
       `${this.conf.user}${this.conf.host}:${this.conf.path}`,
+      default_include,
       default_exclude
     ];
     if (this.conf.port) { // 默认是22端口，不过有些机器没有开22，因此需要有这个设置

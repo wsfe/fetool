@@ -91,14 +91,16 @@ fet init [projectName]
       port: 63501,
       local: './', // 默认当前目录
       path: '/usr/local/src/abc', //服务器端要存放的地址
-      sudo: false
+      sudo: false,
+      include: ['dev']
     },
     dev2: {
       host: '127.0.0.1',
       domain: '//beta1.example.com',
       port: 63501,
       path: '/usr/local/src/dec',
-      sudo: false
+      sudo: false,
+      include: ['dev']
     }
   },
   entryExtNames: { // 告诉`fet`哪些后缀是属于js或者css，ft才能根据这些来选择编译配置
