@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import shell from 'shelljs';
+import { syncViaFTP } from '../utils/ftp';
 
 function getConfigFile (files) {
   let file = files.find(file => {
@@ -14,7 +15,8 @@ const errorMessage = function(env) {
 export default function sync(program) {
   program.command('sync <env>') // 同步到名字为env的开发环境
     .description('同步到<env>机器')
-    .action((env) => {
+    .option('--ftp', '使用FTP同步')
+    .action((env, options) => {
       env = env ? env : process.env.npm_config_server
       let syncConf = {}
       let configPath = getConfigFile(['fet.config.js', 'ft.config.js'])
@@ -36,7 +38,7 @@ export default function sync(program) {
           process.exit(1)
         }
       }
-      new Sync(syncConf).sync()
+      new Sync(syncConf).sync(options.ftp)
     });
 };
 
@@ -45,7 +47,7 @@ class Sync {
     this.conf = conf
   }
 
-  sync () {
+  sync (useFTP) {
     if (this.conf.user) {
       this.conf.user = `${this.conf.user}@`
     } else {
@@ -70,6 +72,14 @@ class Sync {
       default_include = default_include.concat(this.conf.include)
       default_include = _.uniq(default_include)
     }
+
+    if (useFTP) {
+      syncViaFTP(this.conf.host, this.conf.path, this.conf.local, default_include).then(() => {
+        process.exit()
+      })
+      return
+    }
+
     default_include = default_include.map((item) => {
       return `--include=${item}`
     }).join(' ')
