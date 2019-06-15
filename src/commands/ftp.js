@@ -1,7 +1,9 @@
 import FTP from 'ftp'
 import nodePath from 'path'
-import { genChecksumJson, compareChecksum } from './checksum'
-import batchPromise from './batch-promise'
+import _ from 'lodash'
+import { genChecksumJson, compareChecksum } from '../utils/checksum'
+import batchPromise from '../utils/batch-promise'
+import getSyncConf from '../utils/sync-conf'
 
 const path = nodePath.posix
 
@@ -168,12 +170,36 @@ const syncViaFTP = (host, rowRootPath, localRootPath, include) => {
         })
       })
     })
+    ftpClient.on('error', (err) => {
+      if (err) {
+        error(err)
+        if (err.code === 530) {
+          error('FTP 服务器连接失败')
+          process.exit(1)
+        }
+      }
+    })
     ftpClient.connect({
       host,
     })
   })
 }
 
-export {
-  syncViaFTP,
-}
+export default function ftp(program) {
+  program.command('ftp <env>') // 同步到名字为env的开发环境
+    .description('通过FTP同步到<env>机器')
+    .action((env) => {
+      const syncConf = getSyncConf(env)
+      const host = syncConf.host
+      const path = syncConf.path
+      const local = syncConf.local || './'
+      let default_include = []
+      if (syncConf['include'] && syncConf['include'].length > 0) {
+        default_include = default_include.concat(syncConf.include)
+        default_include = _.uniq(default_include)
+      }
+      syncViaFTP(host, path, local, default_include).then(() => {
+        process.exit()
+      })
+    });
+};
