@@ -77,7 +77,7 @@ class Sync {
 
     let _args = [
       '-rzcvp',
-      process.platform === 'win32'? "--chmod=a='rX,u+w,g+w'": "--chmod=a='u+rwX,g+rwX,o+rX,o-w'",
+      process.platform === 'win32'? "--chmod=a='rX,u+w,g+w'": "--chmod=u+rwX,g+rwX,o+rX,o-w",
       "--rsync-path='" + (this.conf.sudo? "sudo ": '') + "rsync'",
       this.conf.local,
       `${this.conf.user}${this.conf.host}:${this.conf.path}`,
