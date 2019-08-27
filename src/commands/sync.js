@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import shell from 'shelljs';
+import os from 'os';
 
 function getConfigFile (files) {
   let file = files.find(file => {
@@ -76,7 +77,7 @@ class Sync {
 
     let _args = [
       '-rzcvp',
-      "--chmod=a='rX,u+w,g+w'",
+      process.platform === 'win32'? "--chmod=a='rX,u+w,g+w'": "--chmod=a='u+rwX,g+rwX,o+rX,o-w'",
       "--rsync-path='" + (this.conf.sudo? "sudo ": '') + "rsync'",
       this.conf.local,
       `${this.conf.user}${this.conf.host}:${this.conf.path}`,
