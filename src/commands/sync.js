@@ -25,11 +25,11 @@ class Sync {
     }
     this.conf.local = this.conf.local || './';
 
-    /* exclude */
+    /* exclude 默认是全部，当有设置的时候，根据用户真实的设置来*/
     let default_exclude = ['/*'];
     if (this.conf['exclude'] && this.conf['exclude'].length > 0) {
-      default_exclude = default_exclude.concat(this.conf.exclude);
-      default_exclude = _.uniq(default_exclude);
+      // default_exclude = default_exclude.concat(this.conf.exclude);
+      default_exclude = _.uniq(this.conf.exclude);
     }
     default_exclude = default_exclude.map((item) => {
       return `--exclude=${item}`;
@@ -47,7 +47,7 @@ class Sync {
 
     let _args = [
       '-rzcvp',
-      "--chmod=a='rX,u+w,g+w'",
+      process.platform === 'win32'? "--chmod=a='rX,u+w,g+w'": "--chmod=a=rx,u+rwx,g+rwx",
       "--rsync-path='" + (this.conf.sudo? "sudo ": '') + "rsync'",
       this.conf.local,
       `${this.conf.user}${this.conf.host}:${this.conf.path}`,
