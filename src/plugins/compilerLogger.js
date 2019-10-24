@@ -3,7 +3,7 @@
 export default class CompilerLogger {
 
   apply(compiler) {
-    compiler.plugin('done', (stats) => {
+    compiler.hooks.done.tap('CompilerLoggerPlugin', (stats) => {
       let info = stats.toJson({ errorDetails: false });
 
       if (stats.hasErrors()) {
@@ -11,13 +11,13 @@ export default class CompilerLogger {
           error(err + '\n');
         });
       }
-  
+
       if (stats.hasWarnings()) {
         info.warnings.map((warning) => {
           warn(warning + '\n');
         });
       }
-      
+
       info.assets.map(asset => {
         let fileSize = asset.size;
         fileSize = fileSize > 1024

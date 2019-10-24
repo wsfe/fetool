@@ -13,7 +13,6 @@ import {
   ReplaceCssHashPlugin
 } from '../plugins';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
-import UglifyJsPlugin from 'uglifyjs-webpack-plugin';
 
 const NO_PROTOCAL_URL = /^\/\/\w+(\.\w+)+/
 
@@ -139,10 +138,6 @@ class Project {
     config.plugins.push(new webpack.optimize.ModuleConcatenationPlugin());
     config.plugins.push(new CompilerLoggerPlugin());
     if (options.min) {
-      config.plugins.push(new UglifyJsPlugin({
-        parallel: true,
-        cache: options.cache? sysPath.join(this.cwd, '.cache/uglifyjs'): false
-      }))
       config.plugins.push(new VersionPlugin(sysPath.join(this.cwd, 'ver'), this.config.entryExtNames));
     }
   }

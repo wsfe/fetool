@@ -16,13 +16,14 @@ class Config {
     let projectName = require(sysPath.join(cwd, 'package.json')).name
     this.baseConfig = {
       context: sysPath.join(cwd, 'src'),
+      mode: this.getMode(this.NODE_ENV),
       entry: {},
       output: this._getOutputConfig(projectName, this.NODE_ENV),
       module: {
         rules: [{
           test: /\.json$/,
-          exclude: /node_modules/,
-          use: ['json-loader']
+          type: "javascript/auto",
+          use: "special-loader"
         }, {
           test: /\.(html|string|tpl)$/,
           use: ['html-loader']
@@ -58,10 +59,14 @@ class Config {
     // this.config = _.cloneDeep(this.baseConfig);
   }
 
+  getMode (env) {
+    return env === ENV.LOC ? ENV.DEV : env
+  }
+
   /**
    * 根据项目名称和编译环境获取output配置
-   * @param {项目名称} projectName 
-   * @param {编译环境：local，develop，product} env 
+   * @param {项目名称} projectName
+   * @param {编译环境：local，develop，product} env
    */
   _getOutputConfig(projectName, env) {
     return {
@@ -81,14 +86,14 @@ class Config {
         path: './prd/',
         filename: '[noextname]@[chunkhash][ext]',
         chunkFilename: '[id].chunk@[chunkhash].js',
-        publicPath: `/${projectName}/prd/`        
+        publicPath: `/${projectName}/prd/`
       }
     }[env];
   }
 
   /**
    * 设置扩展名映射，将一些特殊扩展名映射到相应的js和css对象里面
-   * @param {需要输出的对象的扩展名} entryExtNames 
+   * @param {需要输出的对象的扩展名} entryExtNames
    */
   setEntryExtNames(entryExtNames) {
     if (entryExtNames) {
@@ -105,7 +110,7 @@ class Config {
 
   /**
    * 设置用户需要导出的对象，支持数组，支持map对象
-   * @param {用户需要导出的文件对象} entries 
+   * @param {用户需要导出的文件对象} entries
    */
   setExports(entries) {
     if (entries) {
@@ -171,7 +176,7 @@ class Config {
       let alias = config.resolve.alias;
       Object.keys(alias).forEach((name) => {
         if (!/^\w+.+/.test(alias[name])) { // 如果不是已相对路径或者绝对路径为开头的（一般就是查找安装的包，例如vue,lodash等）
-          alias[name] = sysPath.resolve(this.cwd, alias[name]);          
+          alias[name] = sysPath.resolve(this.cwd, alias[name]);
         }
       });
     }

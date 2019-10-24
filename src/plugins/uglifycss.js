@@ -5,7 +5,7 @@ class UglifyCSS {
   constructor(options) {
   }
   apply(compiler) {
-    compiler.plugin('emit', (compilation, callback) => {
+    compiler.hooks.emit.tapAsync('UglifyCSSPlugin', (compilation, callback) => {
       compilation.chunks.forEach((chunk) => {
         chunk.files.forEach((filename) => {
           if (sysPath.extname(filename) === '.css') {

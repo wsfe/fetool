@@ -10,7 +10,7 @@ export default class HtmlCompiler {
   }
 
   apply(compiler) {
-    compiler.plugin('after-emit', (compilation, callback) => {
+    compiler.hooks.afterEmit.tapAsync('HtmlCompilerPlugin', (compilation, callback) => {
       let sourcePath = sysPath.join(this.cwd, this.outputPath) // 待编译的地址，相对于webpack配置的contex这个字段
       let dist = sysPath.join(compiler.options.output.path, 'html') // 默认存放到html文件夹
       fs.copy(sourcePath, dist, err => {

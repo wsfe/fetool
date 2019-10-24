@@ -7,7 +7,7 @@ class CSSIgnoreJS {
   constructor() {}
 
   apply(compiler) {
-    compiler.plugin('emit', (compilation, callback) => {
+    compiler.hooks.emit.tapAsync('CSSIgnoreJSPlugin', (compilation, callback) => {
       let assets = {};
       Object.keys(compilation.assets).forEach((key) => {
         if (!/.*\.js(\.map)?$/.test(key)) { // 如果不是js

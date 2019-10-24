@@ -1,36 +1,35 @@
 const fs = require('fs-extra');
 const gulp = require('gulp');
 const babel = require('gulp-babel');
-const watch = require('gulp-watch');
 
-// gulp.task('default', ['clearLib', 'compileJS', 'moveConfig']);
-gulp.task('default', ['clearLib', 'compileJS', 'moveConfig']);
-gulp.task('watch', ['clearLib', 'watchJS', 'moveConfig']);
 
-gulp.task('clearLib', [], function () {
-  return fs.removeSync('./lib/')
-});
+function clearLib () {
+  return fs.remove('./lib/')
+}
 
-gulp.task('watchJS', [], function () {
-  var babelProcess = babel({ presets: ['es2015'] })
+function compileJS () {
+  const babelProcess = babel({
+    presets: ['@babel/env']
+  })
   babelProcess.on('error', function (e) {
     console.log(e);
     process.exit(1);
-  });
-
-  return watch('src/**/*.js', {
-    verbose: true,
-    ignoreInitial: false
-  }).pipe(babelProcess).pipe(gulp.dest('lib'));
-});
-
-gulp.task('compileJS', [], function () {
+  })
   return gulp.src('src/**/*.js')
-    .pipe(babel({ presets: ['es2015'] }))
+    .pipe(babelProcess)
     .pipe(gulp.dest('lib'));
-});
+}
 
-gulp.task('moveConfig', [], function() {
+function moveConfig () {
   return gulp.src(['src/config/**/*.*', 'src/config/**/.*'], {base: 'src/'})
     .pipe(gulp.dest('lib'));
-});
+}
+
+const build = gulp.series(clearLib, compileJS, moveConfig)
+
+function watch () {
+  gulp.watch('src/**/*.js', build)
+}
+
+exports.default = build
+exports.watch = watch

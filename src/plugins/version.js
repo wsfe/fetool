@@ -55,8 +55,8 @@ export default class Version {
   }
 
   apply(compiler) {
-    compiler.plugin('after-emit', (compilation, callback) => {
-      compilation.chunks.forEach(chunk => { 
+    compiler.hooks.afterEmit.tapAsync('VersionPlugin', (compilation, callback) => {
+      compilation.chunks.forEach(chunk => {
         if (!chunk.name) { // 如果是异步加载形成的chunk，就不会有name这个属性，因此也不需要放到版本号表里面
           return
         }

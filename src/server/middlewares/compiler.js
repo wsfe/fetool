@@ -4,7 +4,7 @@ import LRU from 'lru-cache';
 import { projectService } from '../../services';
 
 const OUTPUT_DIR = 'prd'
-let multiModeCache = LRU({
+let multiModeCache = new LRU({
   max: 20,
   maxAge: 1000 * 60 * 60 * 24 * 3 // 超过3天就清除缓存
 }); // 多页应用的缓存，最多缓存50个，超过3天就清除
@@ -47,7 +47,7 @@ function getMulitModeConfig(config, requestUrl) {
 
 /**
  * 获取webpack-dev-middleware中间件
- * @param {webpack编译器} compiler 
+ * @param {webpack编译器} compiler
  */
 function getMiddleWare(compiler) {
   return webpackDevMiddleware(compiler, {
@@ -82,9 +82,9 @@ function getMiddleWare(compiler) {
 }
 
 /**
- * 
- * @param {Project对象} project 
- * @param {project名字} projectName 
+ *
+ * @param {Project对象} project
+ * @param {project名字} projectName
  */
 function multiMode(project, projectName, requestUrl, cacheId) {
   let middleware = multiModeCache.get(cacheId);

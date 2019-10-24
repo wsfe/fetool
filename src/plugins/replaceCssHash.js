@@ -11,7 +11,7 @@ class ReplaceCssHash {
   constructor() {}
 
   apply (compiler) {
-    compiler.plugin("emit", (compilation, callback) => {
+    compiler.hooks.emit.tapAsync("ReplaceCssHashPlugin", (compilation, callback) => {
       let needRemoveAssets = []
       let assets = compilation.assets
       compilation.chunks.forEach(chunk => {
