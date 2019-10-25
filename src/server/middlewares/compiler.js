@@ -51,9 +51,10 @@ function getMulitModeConfig(config, requestUrl) {
  */
 function getMiddleWare(compiler) {
   return webpackDevMiddleware(compiler, {
+    logLevel: 'silent',
     lazy: true,
-    quiet: true,
-    reporter({ state, stats, options }) {
+    reporter(middlewareOptions, reporterOptions) {
+      const {state, stats} = reporterOptions
       if (state) {
         if (_args.verbose) {
           Object.keys(stats.compilation.assets).forEach((key) => {
@@ -64,13 +65,13 @@ function getMiddleWare(compiler) {
           spinner.text = 'webpack: Failed to compile.';
           spinner.fail();
           spinner.text = '';
-          log(stats.toString(options.stats));
+          log(stats.toString(stats));
         }
         if (stats.hasWarnings()) {
           spinner.text = 'webpack: Compiled with warnings.';
           spinner.warn();
           spinner.text = '';
-          log(stats.toString(options.stats));
+          log(stats.toString(stats));
         }
       } else {
         if (_args.verbose) {
@@ -78,7 +79,7 @@ function getMiddleWare(compiler) {
         }
       }
     }
-  });
+  })
 }
 
 /**
