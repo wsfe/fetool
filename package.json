@@ -1,6 +1,6 @@
 {
   "name": "fet-cli",
-  "version": "1.2.4",
+  "version": "2.0.0",
   "description": "基于webpack的构建工具，解决开发时多项目时需要同时启动多个server的情况",
   "bin": {
     "fet": "bin/fet"
@@ -40,7 +40,6 @@
     "html-loader": "^0.5.0",
     "http-proxy-middleware": "^0.20.0",
     "inquirer": "^7.0.0",
-    "json-loader": "^0.5.7",
     "lodash": "^4.17.15",
     "log-symbols": "^3.0.0",
     "lru-cache": "^5.1.1",
@@ -70,12 +69,10 @@
   "devDependencies": {
     "@babel/core": "^7.6.4",
     "@babel/preset-env": "^7.6.3",
-    "babel-preset-es2015": "^6.24.1",
     "gulp": "^4.0.2",
-    "gulp-babel": "^8.0.0",
-    "gulp-watch": "^5.0.1"
+    "gulp-babel": "^8.0.0"
   },
   "engines": {
-    "node": ">=5.10.0"
+    "node": ">=8.10.0"
   }
 }
