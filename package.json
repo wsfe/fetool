@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "gulp watch",
     "build": "gulp",
-    "prepublish": "gulp",
+    "prepare": "gulp",
     "postinstall": "node ./bin/postinstall"
   },
   "repository": {

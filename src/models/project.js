@@ -2,6 +2,7 @@ import webpack from 'webpack';
 import _ from 'lodash';
 import shell from 'shelljs';
 import mkdirp from 'mkdirp';
+import ora from 'ora'
 import MutliConfig from './mutli.config';
 import {
   ProgressPlugin,
@@ -60,14 +61,11 @@ class Project {
   }
 
   pack(options) {
-    spinner.text = 'start pack';
-    spinner.start();
+    const spinner = ora('start pack').start()
     let startTime = Date.now(), // 编译开始时间
       configs = this._getWebpackConfigs(options);
     webpack(configs, (err, stats) => {
-      spinner.text = 'end pack';
-      spinner.text = '';
-      spinner.stop();
+      spinner.succeed('end pack');
       if (err) {
         error(err.stack || err);
         if (err.details) {
