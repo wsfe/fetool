@@ -10,9 +10,7 @@ export default function lint(program) {
       let lintConfig = project.userConfig.lint || {};
       let opts = lintConfig.opts || {};
       opts.cwd = sysPath.join(process.cwd(), lintConfig.cwd ? lintConfig.cwd : 'src');
-      spinner.text = 'start lint';
       standard.lintFiles([], opts, (err, results) => {
-        spinner.stop();
         if (err) {
           error(err);
           process.exit(1);

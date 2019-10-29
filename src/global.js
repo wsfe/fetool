@@ -1,5 +1,4 @@
 import chalk from 'chalk';
-import ora from 'ora';
 import logSymbols from 'log-symbols';
 import moment from 'moment';
 
@@ -16,8 +15,6 @@ global.USER_HOME = process.env[process.platform == 'win32' ? 'USERPROFILE' : 'HO
 global.FET_RC = sysPath.join(USER_HOME, '.fetrc');
 
 global.info = console.info;
-
-global.spinner = ora().start();
 
 global.success = function() {
   info(chalk.green(' √ ' + [].slice.call(arguments).join(' ')));

@@ -1,6 +1,6 @@
 {
   "name": "fet-cli",
-  "version": "2.0.0",
+  "version": "2.0.2",
   "description": "基于webpack的构建工具，解决开发时多项目时需要同时启动多个server的情况",
   "bin": {
     "fet": "bin/fet"
@@ -48,7 +48,7 @@
     "moment": "^2.24.0",
     "morgan": "^1.9.1",
     "multimatch": "^4.0.0",
-    "ora": "^4.0.2",
+    "ora": "^3.4.0",
     "read-metadata": "^1.0.0",
     "right-pad": "^1.0.1",
     "rimraf": "^3.0.0",

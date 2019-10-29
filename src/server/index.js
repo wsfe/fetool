@@ -3,7 +3,6 @@ import favicon from 'serve-favicon';
 import http from 'http';
 import https from 'https';
 import middlewares from './middlewares';
-import { resolve } from 'url';
 
 class Server {
   constructor(options) {
