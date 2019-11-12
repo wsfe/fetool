@@ -29,7 +29,7 @@ global.error = function() {
 };
 
 global.log = function() {
-  console.log(chalk.cyan('[ft] '), [].slice.call(arguments).join(' '));
+  console.log(chalk.cyan('[fet] '), [].slice.call(arguments).join(' '));
 };
 
 global.logWithTime = function() {

@@ -29,7 +29,7 @@ yarn global add fet-cli
 ### server
 用于启动服务器，支持多项目并行开发。
 * `-p`:设置服务端口，默认是80
-* `-w`:设置需要监听的文件，默认是监听`ft.config.js`以及`build`文件夹。如果要新增可以用逗号隔开，例如：'src/home,base'。
+* `-w`:设置需要监听的文件，默认是监听`fet.config.js`以及`build`文件夹。如果要新增可以用逗号隔开，例如：'src/home,base'。
 * `-s`:开启HTTPS服务，如果没有配置全局的证书，那么会启用默认证书，默认证书是没有经过认证的，在目前的浏览器，会引起不可预知的错误。因此，建议不要用默认证书。如果需要配置经过认证的证书，请执行`fet config https-key <path-to-your-key>`，以及`fet config https-crt <path-to-your-crt>`。
 * `-v`:提示server是否显示详细的编译信息，默认不开启。
 * `-c`:单页应用的代理配置路径，默认是服务器启动目录下的fet.proxy.conf
@@ -103,7 +103,7 @@ fet init [projectName]
       include: ['dev']
     }
   },
-  entryExtNames: { // 告诉`fet`哪些后缀是属于js或者css，ft才能根据这些来选择编译配置
+  entryExtNames: { // 告诉`fet`哪些后缀是属于js或者css，fet才能根据这些来选择编译配置
     css: ['.css', '.scss', '.sass', '.less'],
     js: ['.js', '.jsx', '.vue']
   },

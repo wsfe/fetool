@@ -64,7 +64,7 @@ function getMiddleWare(compiler) {
         if (stats.hasErrors()) {
           error('webpack: Failed to compile.');
           log(stats.toString(stats));
-        } 
+        }
         if (stats.hasWarnings()) {
           warn('webpack: Compiled with warnings.');
           log(stats.toString(stats));
@@ -97,7 +97,7 @@ function multiMode(project, projectName, requestUrl, cacheId) {
     if (!newConfig) { // 如果配置不存在
       return (req, res, next) => {
         res.statusCode = 404;
-        res.end('[ft] - 资源入口未找到，请检查项目' + projectName + '的配置文件.');
+        res.end('[fet] - 资源入口未找到，请检查项目' + projectName + '的配置文件.');
       }
     }
     middleware = getMiddleWare(compiler);

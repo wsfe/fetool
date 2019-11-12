@@ -26,7 +26,7 @@ class Project {
   constructor(cwd, env) {
     this.cwd = cwd;
     this.NODE_ENV = env;
-    this.configFile = sysPath.resolve(this.cwd, 'ft.config');
+    this.configFile = sysPath.resolve(this.cwd, 'fet.config');
     let userConfig = this.getUserConfig(this.configFile);
     this.userConfig = userConfig;
     this.config = new MutliConfig(this);
