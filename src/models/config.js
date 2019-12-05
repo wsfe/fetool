@@ -21,10 +21,6 @@ class Config {
       output: this._getOutputConfig(projectName, this.NODE_ENV),
       module: {
         rules: [{
-          test: /\.json$/,
-          type: "javascript/auto",
-          use: "special-loader"
-        }, {
           test: /\.(html|string|tpl)$/,
           use: ['html-loader']
         }]
