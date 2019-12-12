@@ -9,6 +9,14 @@ class Server {
     this.readConf(options.config).then((conf) => {
       this.app = express();
       this.app.set('fet', conf)
+      this.app.use((req, res, next) => {
+        if (options.open || req.ip === '::1' || req.ip === '::ffff:127.0.0.1' || req.ip === '127.0.0.1') {
+          next()
+        } else {
+          res.status(403)
+          res.end()
+        }
+      })
       this.app.use(favicon(sysPath.join(__dirname, '../../public', 'favicon.png')));
       middlewares(this.app, options);
       this.start(options);
