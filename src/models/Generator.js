@@ -25,7 +25,7 @@ Handlebars.registerHelper('unless_eq', function (a, b, opts) {
     : opts.fn(this)
 })
 
-class Generate {
+export default class Generator {
   /**
    * Generate a template given a `src` and `dest`.
    *
@@ -255,5 +255,3 @@ class Generate {
     })
   }
 }
-
-export default Generate
