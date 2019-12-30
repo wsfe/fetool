@@ -1,36 +1,54 @@
+import path from 'path'
+import download from 'download-git-repo'
+import ora from 'ora'
+import home from 'user-home'
+import inquirer from 'inquirer'
+import { sync as rm } from 'rimraf'
+import { existsSync as exists } from 'fs'
 import Generator  from './Generator'
 
-const path = require('path')
-const exists = require('fs').existsSync
-const download = require('download-git-repo')
-const ora = require('ora')
-const home = require('user-home')
-const inquirer = require('inquirer')
-const rm = require('rimraf').sync
-
 export default class Creator {
+  /**
+   * 创建项目的类
+   * @param {String} projectName 项目名
+   * @param {String} destDir 目标文件夹
+   */
   constructor (projectName, destDir) {
     this.projectName = projectName
     this.destDir = destDir
   }
 
+  /**
+   * 创建项目的入口
+   * @param {Object} options 命令参数
+   */
   create (options) {
     this.confirmCreate() // 确认创建
       .then(() => {
+        if (options.url) {
+          return Promise.resolve({ templatePath: options.url })
+        }
         return this.selectTemplate() // 选择模板
       })
       .then(({templatePath, clone}) => {
-        return this.downloadTemplate(templatePath, clone) // 下载模板
+        // templatePath: 模板的下载路径
+        // clone: 是否使用git clone
+        return this.downloadTemplate(templatePath, options.clone || clone ) // 下载模板
       })
       .then(tmpPath => {
-        new Generator().generate(this.projectName, path.join(home, '/Documents/wangsu/fet-templates-vue'), this.destDir, err => {
-          if (err) {
-            this.exit(err)
-          }
-          success('项目创建成功')
-        })
+        // tmpPath: 存放模板的本地路径
+        // 生成项目
+        return new Generator()
+          .generate(this.projectName, tmpPath, this.destDir)
+      })
+      .then(() => {
+        success('项目创建成功')
+      })
+      .catch(err => {
+        this.exit(err)
       })
   }
+
 
   /**
    * 确定创建，防止误操作

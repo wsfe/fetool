@@ -3,8 +3,10 @@ import path from 'path'
 
 export default function init (program) {
   program
-    .command('init [projectName]')
+    .command('init <projectName>')
     .description('选择模板创建项目')
+    .option('-u, --url <url>', '指定模板下载地址')
+    .option('-c, --clone', '是否使用clone, 默认关闭')
     .action((projectName, options) => {
       const inCurrent = projectName === '.' // 输入"."则在当前文件夹初始化项目
       const name = inCurrent ? path.relative('../', process.cwd()) : projectName // 获取项目名，如果早当前文件夹创建，则取当前文件夹名称
