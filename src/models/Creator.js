@@ -142,8 +142,9 @@ export default class Creator {
   getTemplateData () {
     let globalConfig = JSON.parse(fs.readFileSync(FET_RC, { encoding: 'utf8' }))
     let templatePathMap = {
-      'spa': 'wsfe/fet-templates-vue', // 单页应用
-      'mpa': 'wsfe/fet-templates-multi' // 多页应用
+      'vue(单页)': 'wsfe/fet-templates-vue', // 单页应用
+      'multi(多页)': 'wsfe/fet-templates-multi', // 多页应用
+      'component(组件)': 'wsfe/fet-templates-component' // 组件
     }
     Object.keys(globalConfig).forEach(key => {
       if (globalConfig[key]) {

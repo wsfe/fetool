@@ -47,10 +47,11 @@ export default class Generator {
       opts.metalsmith.before(metalsmith, opts)
     }
 
-    // 加载中间件
+    // 加载插件
     metalsmith
       .use(this.askQuestions(options.prompts))
       .use(this.filterFiles(options.filters))
+      .use(this.renameFiles(options.renames))
       .use(this.renderTemplateFiles(options.skipInterpolation))
 
     // 执行metalsmith函数，或者metalsmith after函数
@@ -109,7 +110,7 @@ export default class Generator {
   }
 
   /**
-   * metalsmith中间件，用于询问meta配置中的prompts问题
+   * metalsmith插件，用于询问meta配置中的prompts问题
    * @param prompts 问题
    */
   askQuestions (prompts) {
@@ -119,7 +120,7 @@ export default class Generator {
   }
 
   /**
-   * metalsmith中间件，用于过滤meta配置中的filters文件
+   * metalsmith插件，用于过滤meta配置中的filters文件
    * @param filters
    */
   filterFiles (filters) {
@@ -146,7 +147,47 @@ export default class Generator {
   }
 
   /**
-   * metalsmith中间件，用于替换文件中的插值
+   * metalsmith插件，用于修改文件名称，
+   * @param {object} renames key为匹配文件路径，value为替换后的名字，可以是string也支持function
+   */
+  renameFiles (renames) {
+    return (files, metalsmith, done) => {
+      if (!renames) {
+        return done()
+      }
+
+      const fileNames = Object.keys(files)
+      const metalsmithMetadata = metalsmith.metadata()
+
+      Object.keys(renames).forEach(glob => {
+        fileNames.forEach(file => {
+          if (minimatch(file, glob, { dot: true })) {
+            const rename = renames[glob]
+            let renamedEntry = path.dirname(file) + '/'
+
+            if (renamedEntry === './') {
+              renamedEntry = ''
+            }
+
+            if (typeof rename === 'function') {
+              renamedEntry += rename(path.basename(file), metalsmithMetadata)
+            } else {
+              renamedEntry += rename
+            }
+
+            if (renamedEntry !== file) {
+              files[renamedEntry] = files[file]
+              delete files[file]
+            }
+          }
+        })
+      })
+      done()
+    }
+  }
+
+  /**
+   * metalsmith插件，用于替换文件中的插值
    * @param skipInterpolation 跳过的文件名的匹配规则
    */
   renderTemplateFiles (skipInterpolation) {
