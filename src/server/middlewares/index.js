@@ -25,7 +25,7 @@ export default function initMiddlewares(app, options, conf) {
   app.use(proxyConnection)
   app.use(hashReplacer)
   proxy(app)
-  app.use(/.*\.(html|eot|ttf|woff|svg|json)/, cors)
+  app.use(/.*\.(js|css|html|eot|ttf|woff|svg|json)/, cors)
   app.use(webpackStatic)
   app.use('*.html', htmlCompiler(process.cwd()));
   app.use(serveIndex(process.cwd()));
